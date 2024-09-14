@@ -1,10 +1,10 @@
-package me.gabriel.seren
+package me.gabriel.seren.compiler
 
-import lexer.{DefaultLexer, Lexer}
-import parser.{DefaultParser, Parser}
-import struct.TokenStream
+import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
+import me.gabriel.seren.frontend.parser.{DefaultParser, Parser}
+import me.gabriel.seren.frontend.struct.TokenStream
 
-object SerenApp extends App {
+object CompilerApp extends App {
   private val lexer: Lexer = new DefaultLexer
   private val result = lexer.lex(getSourceCode())
   result.fold(

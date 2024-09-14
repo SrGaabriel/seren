@@ -1,4 +1,4 @@
-package me.gabriel.seren
+package me.gabriel.seren.frontend
 package parser.tree
 
 import struct.Token

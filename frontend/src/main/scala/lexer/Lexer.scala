@@ -1,4 +1,4 @@
-package me.gabriel.seren
+package me.gabriel.seren.frontend
 package lexer
 
 import error.LexicalError

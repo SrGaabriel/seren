@@ -1,4 +1,4 @@
-package me.gabriel.seren
+package me.gabriel.seren.frontend
 package struct
 
 class TokenStream(tokens: List[Token]):
