@@ -6,7 +6,7 @@ import struct.{Token, TokenKind}
 
 class DefaultLexer extends Lexer {
   def lex(input: String): Either[LexicalError, List[Token]] = {
-    val tokens = scala.collection.mutable.ListBuffer.empty[Token]
+    val tokens = collection.mutable.ListBuffer(Token("", TokenKind.BOF))
     var position = 0
 
     while (position < input.length) {
@@ -42,7 +42,7 @@ class DefaultLexer extends Lexer {
         }
         case _ if currentChar.isDigit => {
           val number = currentChar.toString + input.drop(position + 1).takeWhile(_.isDigit)
-          tokens += Token(number, TokenKind.Number(number.toInt))
+          tokens += Token(number, TokenKind.Number)
           position += number.length
         }
         case _ => {

@@ -4,7 +4,8 @@ package struct
 case class Token(value: String, kind: TokenKind)
 
 enum TokenKind:
-  case Number(value: Int)
+  case BOF
+  case Number
   case Plus
   case Minus
   case Multiply
