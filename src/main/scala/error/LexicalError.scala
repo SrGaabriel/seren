@@ -1,10 +1,19 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package error
 
-trait LexicalError {
+import me.gabriel.seren.struct.Token
+
+sealed trait LexicalError {
+  val position: Int
   def message: String
 }
 
-case class UnexpectedCharacterError(character: Char) extends LexicalError {
-  def message: String = s"Unexpected character: $character"
+object LexicalError {
+  case class UnexpectedCharacterError(character: Char, position: Int) extends LexicalError {
+    def message: String = s"Unexpected character: $character"
+  }
+
+  case class UnterminatedString(position: Int) extends LexicalError {
+    def message: String = "Unterminated string literal"
+  }
 }

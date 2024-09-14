@@ -1,4 +1,4 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package parser.tree
 
 import struct.Token
@@ -40,4 +40,12 @@ case class BinaryOperationNode(
   override val children: List[SyntaxTreeNode] = List(left, right)
 
   override def toString: String = s"BinaryOpNode($left, $op, $right)"
+}
+
+case class StringLiteralNode(token: Token) extends SyntaxTreeNode {
+  val value: String = token.value
+
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"StringLiteralNode($value)"
 }

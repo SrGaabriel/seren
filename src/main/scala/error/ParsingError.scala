@@ -1,22 +1,20 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package error
 
 import struct.TokenKind
+import me.gabriel.seren.struct.Token
 
 sealed trait ParsingError extends Error {
   val message: String
+  val token: Token
 }
 
 object ParsingError {
-  case class NotImplementedFeatureError(feature: String) extends ParsingError {
-    override val message: String = s"Feature $feature is not implemented yet"
-  }
-
-  case class UnexpectedTokenError(token: String) extends ParsingError {
+  case class UnexpectedTokenError(token: Token) extends ParsingError {
     override val message: String = s"Unexpected token: $token"
   }
-  
-  case class InvalidBinaryOpError(op: TokenKind) extends ParsingError {
-    override val message: String = s"Invalid binary operation: $op"
+
+  case class InvalidBinaryOpError(token: Token) extends ParsingError {
+    override val message: String = s"Invalid binary operation: ${token.kind}"
   }
 }

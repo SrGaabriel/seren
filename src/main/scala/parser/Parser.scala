@@ -1,4 +1,4 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package parser
 
 import error.ParsingError

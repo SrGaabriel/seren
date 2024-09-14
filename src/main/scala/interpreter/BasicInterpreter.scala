@@ -1,8 +1,9 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package interpreter
 
 import struct.BinaryOp
 import parser.tree.{BinaryOperationNode, NumericNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.parser.tree.StringLiteralNode
 
 class BasicInterpreter {
   def execute(tree: SyntaxTree): Unit = {
@@ -27,6 +28,7 @@ class BasicInterpreter {
         parseExpression(right)
       )
       case NumericNode(token) => token.value.toInt
+      case StringLiteralNode(token) => token.value
       case _ => throw new RuntimeException("Invalid expression")
     }
   }

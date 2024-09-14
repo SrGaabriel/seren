@@ -1,7 +1,7 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package lexer
 
-import error.{LexicalError, UnexpectedCharacterError}
+import error.LexicalError
 import struct.{Token, TokenKind}
 
 class DefaultLexer extends Lexer {
@@ -44,13 +44,21 @@ class DefaultLexer extends Lexer {
           tokens += Token("^", TokenKind.Exponentiation)
           position += 1
         }
+        case '"' => {
+          val string = input.drop(position + 1).takeWhile(_ != '"')
+          if (string.isEmpty) {
+            return Left(LexicalError.UnterminatedString(position))
+          }
+          tokens += Token(string, TokenKind.String)
+          position += string.length + 2
+        }
         case _ if currentChar.isDigit => {
           val number = currentChar.toString + input.drop(position + 1).takeWhile(_.isDigit)
           tokens += Token(number, TokenKind.Number)
           position += number.length
         }
         case _ => {
-          return Left(UnexpectedCharacterError(currentChar))
+          return Left(LexicalError.UnexpectedCharacterError(currentChar, position))
         }
       }
     }

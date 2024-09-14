@@ -1,9 +1,9 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package parser
 
-import error.ParsingError.{InvalidBinaryOpError, NotImplementedFeatureError, UnexpectedTokenError}
+import error.ParsingError.{InvalidBinaryOpError, UnexpectedTokenError}
 import error.ParsingError
-import parser.tree.{BinaryOperationNode, NumericNode, RootNode, SyntaxTree, SyntaxTreeNode}
+import parser.tree.*
 import struct.{BinaryOp, Token, TokenKind, TokenStream}
 
 class DefaultParser extends Parser {
@@ -52,7 +52,8 @@ class DefaultParser extends Parser {
         val peek = stream.peek
         peek.kind match {
             case TokenKind.Number => parseNumber(stream)
-            case _ => Left(UnexpectedTokenError(peek.value))
+            case TokenKind.String => parseString(stream)
+            case _ => Left(UnexpectedTokenError(peek))
         }
     }
 
@@ -62,9 +63,8 @@ class DefaultParser extends Parser {
                 case TokenKind.Exponentiation =>
                     for {
                     opToken <- Right(stream.next)
-                    op      <- parseBinaryOpKind(opToken.kind)
                     right   <- parseNumberLiteral(stream)
-                    } yield BinaryOperationNode(opToken, op, n, right)
+                    } yield BinaryOperationNode(opToken, BinaryOp.Power, n, right)
                 case _ => Right(n)
             }
         }
@@ -75,12 +75,15 @@ class DefaultParser extends Parser {
         Right(NumericNode(token))
     }
 
+    private def parseString(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+        Right(StringLiteralNode(stream.next))
+    }
+
     private def parseBinaryOpKind(tokenKind: TokenKind): Either[ParsingError, BinaryOp] = tokenKind match {
         case TokenKind.Plus => Right(BinaryOp.Plus)
         case TokenKind.Minus => Right(BinaryOp.Minus)
         case TokenKind.Multiply => Right(BinaryOp.Multiply)
         case TokenKind.Divide => Right(BinaryOp.Divide)
         case TokenKind.Exponentiation => Right(BinaryOp.Power)
-        case _ => Left(InvalidBinaryOpError(tokenKind))
     }
 }

@@ -1,4 +1,4 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package struct
 
 case class Token(value: String, kind: TokenKind)
@@ -8,6 +8,7 @@ enum TokenKind:
   case Number
   case Plus
   case Minus
+  case String
   case Multiply
   case Divide
   case Exponentiation

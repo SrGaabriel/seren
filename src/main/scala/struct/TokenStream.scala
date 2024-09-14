@@ -1,4 +1,4 @@
-package me.gabriel.soma
+package me.gabriel.seren
 package struct
 
 class TokenStream(tokens: List[Token]):
