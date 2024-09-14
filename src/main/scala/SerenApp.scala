@@ -1,18 +1,15 @@
 package me.gabriel.seren
 
-import interpreter.BasicInterpreter
 import lexer.{DefaultLexer, Lexer}
 import parser.{DefaultParser, Parser}
 import struct.TokenStream
 
-val text = """1 + 2 * 3 + 2^3 * 4^5 + "Hello" + 1"""
-
-object ParserApp extends App {
+object SerenApp extends App {
   private val lexer: Lexer = new DefaultLexer
-  private val result = lexer.lex(text)
+  private val result = lexer.lex(getSourceCode())
   result.fold(
     error => {
-      println(s"Error: ${error.message}")
+      println(s"Lexing Error: ${error.message}")
       sys.exit(1)
     },
     tokens => tokens.foreach(println)
@@ -23,13 +20,15 @@ object ParserApp extends App {
   private val syntaxTree = parser.parse(stream)
   syntaxTree.fold(
     error => {
-      println(s"Error: ${error.message}")
+      println(s"Parsing Error: ${error.message}")
       sys.exit(1)
     },
     tree => println(tree.prettyPrint)
   )
 
-  println("Interpreting...")
-  private val interpreter = new BasicInterpreter
-  interpreter.execute(syntaxTree.right.get)
+  private def getSourceCode(): String = {
+    val file = new java.io.File("app.sr")
+    val source = scala.io.Source.fromFile(file)
+    source.mkString
+  }
 }

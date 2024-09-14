@@ -13,7 +13,7 @@ class DefaultLexer extends Lexer {
       val currentChar = input(position)
 
       currentChar match {
-        case ' ' | '\t' | '\n' => {
+        case ' ' | '\t' | '\n' | '\r' => {
           position += 1
         }
         case '+' => {
@@ -44,6 +44,14 @@ class DefaultLexer extends Lexer {
           tokens += Token("^", TokenKind.Exponentiation)
           position += 1
         }
+        case '{' => {
+          tokens += Token("{", TokenKind.LeftBrace)
+          position += 1
+        }
+        case '}' => {
+          tokens += Token("}", TokenKind.RightBrace)
+          position += 1
+        }
         case '"' => {
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) {
@@ -52,10 +60,24 @@ class DefaultLexer extends Lexer {
           tokens += Token(string, TokenKind.String)
           position += string.length + 2
         }
+        case ';' => {
+          tokens += Token(";", TokenKind.SemiColon)
+          position += 1
+        }
         case _ if currentChar.isDigit => {
           val number = currentChar.toString + input.drop(position + 1).takeWhile(_.isDigit)
           tokens += Token(number, TokenKind.Number)
           position += number.length
+        }
+        case _ if currentChar.isLetter || currentChar == '_' => {
+          val identifier = currentChar.toString + input.drop(position + 1).takeWhile(_.isLetterOrDigit)
+          tokens += (identifier match {
+            case "let" => Token("let", TokenKind.Let)
+            case "fn" => Token("fn", TokenKind.Function)
+            case "ret" => Token("return", TokenKind.Return)
+            case _ => Token(identifier, TokenKind.Identifier)
+          })
+          position += identifier.length
         }
         case _ => {
           return Left(LexicalError.UnexpectedCharacterError(currentChar, position))

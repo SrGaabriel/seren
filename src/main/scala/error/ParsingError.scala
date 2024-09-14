@@ -1,8 +1,7 @@
 package me.gabriel.seren
 package error
 
-import struct.TokenKind
-import me.gabriel.seren.struct.Token
+import struct.Token
 
 sealed trait ParsingError extends Error {
   val message: String

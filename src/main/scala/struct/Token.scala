@@ -9,9 +9,16 @@ enum TokenKind:
   case Plus
   case Minus
   case String
+  case Let
+  case SemiColon
+  case Function
+  case Identifier
+  case Return
   case Multiply
   case Divide
   case Exponentiation
+  case LeftBrace
+  case RightBrace
   case LeftParenthesis
   case RightParenthesis
   case EOF
