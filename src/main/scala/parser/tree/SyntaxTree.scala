@@ -21,9 +21,15 @@ sealed trait SyntaxTreeNode {
   val children: List[SyntaxTreeNode]
 }
 
-case class RootNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode
+case class RootNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode {
+  override def toString: String = s"RootNode(children=${children.size})"
+}
 
-case class NumericNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode
+case class NumericNode(token: Token) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"NumericNode(${token.value})"
+}
 
 case class BinaryOperationNode(
                                 token: Token,
@@ -32,4 +38,6 @@ case class BinaryOperationNode(
                                 right: SyntaxTreeNode
                               ) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(left, right)
+
+  override def toString: String = s"BinaryOpNode($left, $op, $right)"
 }

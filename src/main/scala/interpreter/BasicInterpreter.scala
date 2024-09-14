@@ -26,7 +26,7 @@ class BasicInterpreter {
         op,
         parseExpression(right)
       )
-      case NumericNode(token, _) => token.value.toInt
+      case NumericNode(token) => token.value.toInt
       case _ => throw new RuntimeException("Invalid expression")
     }
   }
@@ -37,6 +37,7 @@ class BasicInterpreter {
       case BinaryOp.Minus => left.asInstanceOf[Int] - right.asInstanceOf[Int]
       case BinaryOp.Multiply => left.asInstanceOf[Int] * right.asInstanceOf[Int]
       case BinaryOp.Divide => left.asInstanceOf[Int] / right.asInstanceOf[Int]
+      case BinaryOp.Power => Math.pow(left.asInstanceOf[Int], right.asInstanceOf[Int]).toInt
     }
   }
 }

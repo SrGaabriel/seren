@@ -5,7 +5,7 @@ import lexer.{DefaultLexer, Lexer}
 import parser.{DefaultParser, Parser}
 import struct.TokenStream
 
-val text = "1 + 2 * 3"
+val text = "1 + 2 * 3 + 2^3 * 4^5 + 1"
 
 object ParserApp extends App {
   private val lexer: Lexer = new DefaultLexer

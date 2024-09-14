@@ -10,6 +10,7 @@ enum TokenKind:
   case Minus
   case Multiply
   case Divide
+  case Exponentiation
   case LeftParenthesis
   case RightParenthesis
   case EOF

@@ -40,6 +40,10 @@ class DefaultLexer extends Lexer {
           tokens += Token(")", TokenKind.RightParenthesis)
           position += 1
         }
+        case '^' => {
+          tokens += Token("^", TokenKind.Exponentiation)
+          position += 1
+        }
         case _ if currentChar.isDigit => {
           val number = currentChar.toString + input.drop(position + 1).takeWhile(_.isDigit)
           tokens += Token(number, TokenKind.Number)
