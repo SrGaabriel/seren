@@ -16,6 +16,7 @@ enum TokenKind:
   case Return
   case Multiply
   case Divide
+  case Comma
   case Exponentiation
   case LeftBrace
   case RightBrace

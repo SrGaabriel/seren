@@ -49,3 +49,28 @@ case class StringLiteralNode(token: Token) extends SyntaxTreeNode {
 
   override def toString: String = s"StringLiteralNode($value)"
 }
+
+case class FunctionDeclarationNode(
+                                  token: Token,
+                                  name: String,
+                                  parameters: List[FunctionParameterNode],
+                                  children: List[SyntaxTreeNode]
+                                  ) extends SyntaxTreeNode {
+  override def toString: String = s"FunctionDeclarationNode($name, $parameters, $children)"
+}
+
+case class FunctionParameterNode(token: Token, name: String) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"FunctionParameterNode($name)"
+}
+
+case class FunctionCallNode(
+                            token: Token,
+                            name: String,
+                            arguments: List[SyntaxTreeNode]
+                            ) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = arguments
+
+  override def toString: String = s"FunctionCallNode($name, $arguments)"
+}

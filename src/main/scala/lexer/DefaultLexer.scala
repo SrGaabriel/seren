@@ -9,79 +9,44 @@ class DefaultLexer extends Lexer {
     val tokens = collection.mutable.ListBuffer(Token("", TokenKind.BOF))
     var position = 0
 
+    def addToken(value: String, kind: TokenKind): Unit = {
+      tokens += Token(value, kind)
+      position += value.length
+    }
+
     while (position < input.length) {
       val currentChar = input(position)
 
       currentChar match {
-        case ' ' | '\t' | '\n' | '\r' => {
-          position += 1
-        }
-        case '+' => {
-          tokens += Token("+", TokenKind.Plus)
-          position += 1
-        }
-        case '-' => {
-          tokens += Token("-", TokenKind.Minus)
-          position += 1
-        }
-        case '*' => {
-          tokens += Token("*", TokenKind.Multiply)
-          position += 1
-        }
-        case '/' => {
-          tokens += Token("/", TokenKind.Divide)
-          position += 1
-        }
-        case '(' => {
-          tokens += Token("(", TokenKind.LeftParenthesis)
-          position += 1
-        }
-        case ')' => {
-          tokens += Token(")", TokenKind.RightParenthesis)
-          position += 1
-        }
-        case '^' => {
-          tokens += Token("^", TokenKind.Exponentiation)
-          position += 1
-        }
-        case '{' => {
-          tokens += Token("{", TokenKind.LeftBrace)
-          position += 1
-        }
-        case '}' => {
-          tokens += Token("}", TokenKind.RightBrace)
-          position += 1
-        }
-        case '"' => {
+        case ' ' | '\t' | '\n' | '\r' => position += 1
+        case '+' => addToken("+", TokenKind.Plus)
+        case '-' => addToken("-", TokenKind.Minus)
+        case '*' => addToken("*", TokenKind.Multiply)
+        case '/' => addToken("/", TokenKind.Divide)
+        case '(' => addToken("(", TokenKind.LeftParenthesis)
+        case ')' => addToken(")", TokenKind.RightParenthesis)
+        case '^' => addToken("^", TokenKind.Exponentiation)
+        case '{' => addToken("{", TokenKind.LeftBrace)
+        case '}' => addToken("}", TokenKind.RightBrace)
+        case ';' => addToken(";", TokenKind.SemiColon)
+        case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
-          if (string.isEmpty) {
-            return Left(LexicalError.UnterminatedString(position))
+          if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
+          addToken(string, TokenKind.String)
+          position += 2 // For the quotes
+        case _ if currentChar.isDigit =>
+          val number = input.drop(position).takeWhile(_.isDigit)
+          addToken(number, TokenKind.Number)
+        case _ if currentChar.isLetter || currentChar == '_' =>
+          val identifier = input.drop(position).takeWhile(c => c.isLetterOrDigit || c == '_')
+          val tokenKind = identifier match {
+            case "let" => TokenKind.Let
+            case "fn" => TokenKind.Function
+            case "ret" => TokenKind.Return
+            case _ => TokenKind.Identifier
           }
-          tokens += Token(string, TokenKind.String)
-          position += string.length + 2
-        }
-        case ';' => {
-          tokens += Token(";", TokenKind.SemiColon)
-          position += 1
-        }
-        case _ if currentChar.isDigit => {
-          val number = currentChar.toString + input.drop(position + 1).takeWhile(_.isDigit)
-          tokens += Token(number, TokenKind.Number)
-          position += number.length
-        }
-        case _ if currentChar.isLetter || currentChar == '_' => {
-          val identifier = currentChar.toString + input.drop(position + 1).takeWhile(_.isLetterOrDigit)
-          tokens += (identifier match {
-            case "let" => Token("let", TokenKind.Let)
-            case "fn" => Token("fn", TokenKind.Function)
-            case "ret" => Token("return", TokenKind.Return)
-            case _ => Token(identifier, TokenKind.Identifier)
-          })
-          position += identifier.length
-        }
-        case _ => {
-          return Left(LexicalError.UnexpectedCharacterError(currentChar, position))
-        }
+          addToken(identifier, tokenKind)
+        case _ => return Left(LexicalError.UnexpectedCharacterError(currentChar, position))
       }
     }
 
