@@ -4,7 +4,7 @@ package lexer
 import error.{LexicalError, UnexpectedCharacterError}
 import struct.{Token, TokenKind}
 
-class DefaultLexer {
+class DefaultLexer extends Lexer {
   def lex(input: String): Either[LexicalError, List[Token]] = {
     val tokens = scala.collection.mutable.ListBuffer.empty[Token]
     var position = 0
