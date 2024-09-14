@@ -1,11 +1,9 @@
 package me.gabriel.soma
 
-import lexer.Lexer
-import lexer.DefaultLexer
-import parser.Parser
-import parser.DefaultParser
-
-import me.gabriel.soma.struct.TokenStream
+import interpreter.BasicInterpreter
+import lexer.{DefaultLexer, Lexer}
+import parser.{DefaultParser, Parser}
+import struct.TokenStream
 
 val text = "1 + 2 * 3"
 
@@ -24,4 +22,8 @@ object ParserApp extends App {
     error => println(s"Error: ${error.message}"),
     tree => println(tree.prettyPrint)
   )
+
+  println("Interpreting...")
+  private val interpreter = new BasicInterpreter
+  interpreter.execute(syntaxTree.getOrElse(null))
 }
