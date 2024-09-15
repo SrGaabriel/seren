@@ -8,9 +8,16 @@ lazy val frontend = (project in file("frontend"))
     idePackagePrefix := Some("me.gabriel.seren.frontend")
   )
 
+lazy val analyzer = (project in file("analyzer"))
+  .settings(
+    name := "seren-analyzer",
+    idePackagePrefix := Some("me.gabriel.seren.analyzer")
+  )
+  .dependsOn(frontend)
+
 lazy val compiler = (project in file("compiler"))
   .settings(
     name := "seren-compiler",
     idePackagePrefix := Some("me.gabriel.seren.compiler")
   )
-  .dependsOn(frontend)
+  .dependsOn(analyzer)

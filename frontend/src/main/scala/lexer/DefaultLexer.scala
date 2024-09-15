@@ -29,20 +29,24 @@ class DefaultLexer extends Lexer {
         case '{' => addToken("{", TokenKind.LeftBrace)
         case '}' => addToken("}", TokenKind.RightBrace)
         case ';' => addToken(";", TokenKind.SemiColon)
+        case ':' => addToken(":", TokenKind.TypeDeclaration)
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
-          addToken(string, TokenKind.String)
+          addToken(string, TokenKind.StringLiteral)
           position += 2 // For the quotes
         case _ if currentChar.isDigit =>
           val number = input.drop(position).takeWhile(_.isDigit)
-          addToken(number, TokenKind.Number)
+          addToken(number, TokenKind.NumberLiteral)
         case _ if currentChar.isLetter || currentChar == '_' =>
           val identifier = input.drop(position).takeWhile(c => c.isLetterOrDigit || c == '_')
           val tokenKind = identifier match {
             case "let" => TokenKind.Let
             case "fn" => TokenKind.Function
             case "ret" => TokenKind.Return
+            case "void" => TokenKind.VoidType
+            case "int32" => TokenKind.Int32Type
+            case "string" => TokenKind.StringLiteral
             case _ => TokenKind.Identifier
           }
           addToken(identifier, tokenKind)

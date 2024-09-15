@@ -3,6 +3,7 @@ package parser.tree
 
 import struct.Token
 import struct.BinaryOp
+import me.gabriel.seren.frontend.parser.Type
 
 case class SyntaxTree(root: RootNode) {
   def prettyPrint: String = {
@@ -53,10 +54,11 @@ case class StringLiteralNode(token: Token) extends SyntaxTreeNode {
 case class FunctionDeclarationNode(
                                   token: Token,
                                   name: String,
+                                  returnType: Type,
                                   parameters: List[FunctionParameterNode],
                                   children: List[SyntaxTreeNode]
                                   ) extends SyntaxTreeNode {
-  override def toString: String = s"FunctionDeclarationNode($name, $parameters, $children)"
+  override def toString: String = s"FunctionDeclarationNode($name, $parameters, $returnType)"
 }
 
 case class FunctionParameterNode(token: Token, name: String) extends SyntaxTreeNode {

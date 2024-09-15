@@ -28,4 +28,8 @@ object ParsingError {
   case class UnterminatedSequenceError(token: Token) extends ParsingError {
     override val message: String = s"Unterminated sequence: ${token.kind}"
   }
+  
+  case class InvalidTypeDeclarationError(token: Token) extends ParsingError {
+    override val message: String = s"Invalid type declaration: ${token.kind}"
+  }
 }

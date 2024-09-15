@@ -1,7 +1,7 @@
 package me.gabriel.seren.frontend
 package parser
 
-import error.ParsingError.{InvalidBinaryOpError, InvalidIdentifierError, UnexpectedTokenError, UnterminatedSequenceError}
+import error.ParsingError.*
 import error.ParsingError
 import parser.tree.*
 import struct.{BinaryOp, Token, TokenKind, TokenStream}
@@ -28,9 +28,13 @@ class DefaultParser extends Parser {
             nameToken <- consumeToken(stream, TokenKind.Identifier)
             _ <- consumeToken(stream, TokenKind.LeftParenthesis)
             parameters <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseFunctionParameter)
+            returnType <- consumeToken(stream, TokenKind.TypeDeclaration) match {
+                case Right(_) => parseType(stream)
+                case Left(_) => Right(Type.Void)
+            }
             _ <- consumeToken(stream, TokenKind.LeftBrace)
             body <- parseSequence(stream, TokenKind.SemiColon, TokenKind.RightBrace, parseStatement)
-        } yield FunctionDeclarationNode(fnToken, nameToken.value, parameters, body)
+        } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, body)
     }
 
     private def parseFunctionParameter(stream: TokenStream): Either[ParsingError, FunctionParameterNode] = {
@@ -108,8 +112,8 @@ class DefaultParser extends Parser {
     private def parseFactor(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
-            case TokenKind.Number => parseNumber(stream)
-            case TokenKind.String => parseString(stream)
+            case TokenKind.NumberLiteral => parseNumber(stream)
+            case TokenKind.StringLiteral => parseString(stream)
             case _ => Left(UnexpectedTokenError(peek))
         }
     }
@@ -165,11 +169,22 @@ class DefaultParser extends Parser {
     }
 
     private def consumeToken(stream: TokenStream, kind: TokenKind): Either[ParsingError, Token] = {
-        val token = stream.next
+        val token = stream.peek
         if (token.kind == kind) {
+            stream.next
             Right(token)
         } else {
             Left(UnexpectedTokenError(token))
+        }
+    }
+
+    private def parseType(stream: TokenStream): Either[ParsingError, Type] = {
+        val token = stream.next
+        token.kind match {
+            case TokenKind.VoidType => Right(Type.Void)
+            case TokenKind.Int32Type => Right(Type.Int)
+            case TokenKind.StringLiteral => Right(Type.String)
+            case _ => Left(InvalidTypeDeclarationError(token))
         }
     }
 
