@@ -1,5 +1,6 @@
 package me.gabriel.seren.compiler
 
+import me.gabriel.seren.analyzer.TypeEnvironment
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
 import me.gabriel.seren.frontend.parser.{DefaultParser, Parser}
 import me.gabriel.seren.frontend.struct.TokenStream
@@ -25,6 +26,8 @@ object CompilerApp extends App {
     },
     tree => println(tree.prettyPrint)
   )
+
+  private val typeEnvironment = new TypeEnvironment("main", syntaxTree.right.get.root)
 
   private def getSourceCode(): String = {
     val file = new java.io.File("app.sr")
