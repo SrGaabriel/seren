@@ -22,11 +22,15 @@ sealed trait SyntaxTreeNode {
   val children: List[SyntaxTreeNode]
 }
 
+sealed trait TypedSyntaxTreeNode extends SyntaxTreeNode {
+  var nodeType: Type
+}
+
 case class RootNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode {
   override def toString: String = s"RootNode(children=${children.size})"
 }
 
-case class NumericNode(token: Token) extends SyntaxTreeNode {
+case class NumericNode(token: Token, var nodeType: Type) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
   override def toString: String = s"NumericNode(${token.value})"
@@ -35,16 +39,18 @@ case class NumericNode(token: Token) extends SyntaxTreeNode {
 case class BinaryOperationNode(
                                 token: Token,
                                 op: BinaryOp,
-                                left: SyntaxTreeNode,
-                                right: SyntaxTreeNode
-                              ) extends SyntaxTreeNode {
+                                left: TypedSyntaxTreeNode,
+                                right: TypedSyntaxTreeNode,
+                              ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(left, right)
+  var nodeType: Type = left.nodeType
 
   override def toString: String = s"BinaryOpNode($left, $op, $right)"
 }
 
-case class StringLiteralNode(token: Token) extends SyntaxTreeNode {
+case class StringLiteralNode(token: Token) extends TypedSyntaxTreeNode {
   val value: String = token.value
+  var nodeType: Type = Type.String
 
   override val children: List[SyntaxTreeNode] = List.empty
 
@@ -71,8 +77,9 @@ case class FunctionCallNode(
                             token: Token,
                             name: String,
                             arguments: List[SyntaxTreeNode]
-                            ) extends SyntaxTreeNode {
+                            ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
+  var nodeType: Type = Type.Unknown
 
   override def toString: String = s"FunctionCallNode($name, $arguments)"
 }
