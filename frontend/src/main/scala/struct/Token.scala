@@ -19,6 +19,7 @@ enum TokenKind:
   case Comma
   case Exponentiation
   case LeftBrace
+  case Assign
   case TypeDeclaration
   case VoidType
   case StringType

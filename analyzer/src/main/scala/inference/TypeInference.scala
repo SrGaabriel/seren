@@ -9,5 +9,5 @@ type Constraint = (LazyType, LazyType)
 trait TypeInference {
   def traverseBottomUp(block: LazySymbolBlock, node: SyntaxTreeNode): Unit
 
-  def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): Unit
+  def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): LazyType
 }

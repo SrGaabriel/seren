@@ -41,7 +41,7 @@ class DefaultParser extends Parser {
         throw new NotImplementedError("Function parameters are not implemented yet")
     }
 
-    private def parseExpression(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         // TODO: implement equals check here
         parseNumericExpression(stream)
     }
@@ -54,7 +54,10 @@ class DefaultParser extends Parser {
     }
 
     private def parseIdentifierStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
-        // TODO: assignments
+        if (stream.peekNext.kind == TokenKind.Assign) {
+            return parseAssignment(stream)
+        }
+
         parseComplexExpression(stream)
     }
 
@@ -63,7 +66,7 @@ class DefaultParser extends Parser {
         parseIdentifierExpression(stream)
     }
 
-    private def parseIdentifierExpression(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseIdentifierExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         val token = consumeToken(stream, TokenKind.Identifier)
         if (token.isLeft) return Left(UnexpectedTokenError(stream.peek))
 
@@ -71,7 +74,7 @@ class DefaultParser extends Parser {
 
         stream.peek.kind match {
             case TokenKind.LeftParenthesis => parseFunctionCall(stream, identifier)
-            case _ => Left(InvalidIdentifierError(stream.next))
+            case _ => Right(ReferenceNode(identifier, identifier.value, Type.Unknown))
         }
     }
 
@@ -82,7 +85,7 @@ class DefaultParser extends Parser {
         } yield FunctionCallNode(identifier, identifier.value, arguments)
     }
 
-    private def parseNumericExpression(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseNumericExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         var left = parseTerm(stream)
         while (stream.peek.kind == TokenKind.Plus || stream.peek.kind == TokenKind.Minus) {
             val op = convertTokenKindToBinaryOp(stream.next.kind)
@@ -117,27 +120,10 @@ class DefaultParser extends Parser {
     private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
-            case TokenKind.NumberLiteral => parseNumber(stream)
+            case TokenKind.NumberLiteral => parseNumberLiteral(stream)
             case TokenKind.StringLiteral => parseString(stream)
+            case TokenKind.Identifier => parseIdentifierExpression(stream)
             case _ => Left(UnexpectedTokenError(peek))
-        }
-    }
-
-    private def parseNumber(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
-        parseNumberLiteral(stream).flatMap { number =>
-            stream.peek.kind match {
-                case TokenKind.Exponentiation =>
-                    for {
-                    opToken <- Right(stream.next)
-                    right   <- parseNumberLiteral(stream)
-                    } yield BinaryOperationNode(
-                        opToken,
-                        BinaryOp.Power,
-                        number,
-                        right
-                    )
-                case _ => Right(number)
-            }
         }
     }
 
@@ -148,6 +134,14 @@ class DefaultParser extends Parser {
 
     private def parseString(stream: TokenStream): Either[ParsingError, StringLiteralNode] = {
         Right(StringLiteralNode(stream.next))
+    }
+
+    private def parseAssignment(stream: TokenStream): Either[ParsingError, AssignmentNode] = {
+        for {
+            identifierToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.Assign)
+            expression <- parseExpression(stream)
+        } yield AssignmentNode(identifierToken, identifierToken.value, expression)
     }
 
     private def parseSequence[T <: SyntaxTreeNode](

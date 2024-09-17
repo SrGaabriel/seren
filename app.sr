@@ -1,3 +1,4 @@
 fn main() : int32 {
-    print_line("Hello, World!");
+    a := "Hello, World!";
+    print_line(a);
 }

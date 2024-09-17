@@ -2,9 +2,8 @@ package me.gabriel.seren.analyzer
 package inference
 
 import scala.collection.mutable
-
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.{FunctionDeclarationNode, ReturnNode, SyntaxTreeNode, TypedSyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionDeclarationNode, ReferenceNode, ReturnNode, SyntaxTreeNode, TypedSyntaxTreeNode}
 
 class DefaultTypeInference extends TypeInference {
   private var typeVarCounter = 0
@@ -24,7 +23,7 @@ class DefaultTypeInference extends TypeInference {
     }
   }
 
-  override def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): Unit = {
+  override def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): LazyType = {
     node match {
       case functionNode: FunctionDeclarationNode =>
         val paramTypes = functionNode.parameters.map(_ => newTypeVar())
@@ -34,8 +33,18 @@ class DefaultTypeInference extends TypeInference {
           to = TypeLiteral(node.nodeType)
         )
         println(s"Function: (${block.id}, $typeFun)")
-        block.lazyTypes(functionNode) = typeFun
-      case _ =>
+        block.registerLazyType(functionNode, typeFun)
+      case referenceNode: ReferenceNode =>
+        block.registerLazyType(referenceNode, TypeVariable(referenceNode.name))
+      case assignmentNode: AssignmentNode =>
+        val bodyType = block.lazyTypes(assignmentNode.value)
+        block.registerLazyType(assignmentNode, bodyType)
+      case _ => {
+        if (node.nodeType == Type.Unknown) {
+          println(s"Warning: registering unknown typed node $node")
+        }
+        block.registerLazyType(node, TypeLiteral(node.nodeType))
+      }
     }
   }
 

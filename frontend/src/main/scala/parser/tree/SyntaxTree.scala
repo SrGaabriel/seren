@@ -92,3 +92,16 @@ case class ReturnNode(token: Token, value: TypedSyntaxTreeNode) extends TypedSyn
 
   override def toString: String = s"ReturnNode($value)"
 }
+
+case class AssignmentNode(token: Token, name: String, value: TypedSyntaxTreeNode) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List(value)
+  var nodeType: Type = value.nodeType
+
+  override def toString: String = s"AssignmentNode($name, $value)"
+}
+
+case class ReferenceNode(token: Token, name: String, var nodeType: Type) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"ReferenceNode($name)"
+}

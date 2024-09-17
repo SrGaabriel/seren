@@ -29,7 +29,13 @@ class DefaultLexer extends Lexer {
         case '{' => addToken("{", TokenKind.LeftBrace)
         case '}' => addToken("}", TokenKind.RightBrace)
         case ';' => addToken(";", TokenKind.SemiColon)
-        case ':' => addToken(":", TokenKind.TypeDeclaration)
+        case ':' => {
+          if (input(position + 1) == '=') {
+            addToken(":=", TokenKind.Assign)
+          } else {
+            addToken(":", TokenKind.TypeDeclaration)
+          }
+        }
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
