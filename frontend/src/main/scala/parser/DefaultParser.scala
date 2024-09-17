@@ -90,12 +90,17 @@ class DefaultParser extends Parser {
             left = for {
                 l <- left
                 r <- right
-            } yield BinaryOperationNode(stream.peek, op, l, r)
+            } yield BinaryOperationNode(
+                stream.peek,
+                op,
+                l,
+                r
+            )
         }
         left
     }
     
-    private def parseTerm(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseTerm(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         var left = parseFactor(stream)
         while (stream.peek.kind == TokenKind.Multiply || stream.peek.kind == TokenKind.Divide) {
             val opToken = stream.next
@@ -109,7 +114,7 @@ class DefaultParser extends Parser {
         left
     }
     
-    private def parseFactor(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
             case TokenKind.NumberLiteral => parseNumber(stream)
@@ -118,25 +123,30 @@ class DefaultParser extends Parser {
         }
     }
 
-    private def parseNumber(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
-        parseNumberLiteral(stream).flatMap { n =>
+    private def parseNumber(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
+        parseNumberLiteral(stream).flatMap { number =>
             stream.peek.kind match {
                 case TokenKind.Exponentiation =>
                     for {
                     opToken <- Right(stream.next)
                     right   <- parseNumberLiteral(stream)
-                    } yield BinaryOperationNode(opToken, BinaryOp.Power, n, right)
-                case _ => Right(n)
+                    } yield BinaryOperationNode(
+                        opToken,
+                        BinaryOp.Power,
+                        number,
+                        right
+                    )
+                case _ => Right(number)
             }
         }
     }
 
-    private def parseNumberLiteral(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseNumberLiteral(stream: TokenStream): Either[ParsingError, NumericNode] = {
         val token = stream.next
-        Right(NumericNode(token))
+        Right(NumericNode(token, Type.Unknown))
     }
 
-    private def parseString(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseString(stream: TokenStream): Either[ParsingError, StringLiteralNode] = {
         Right(StringLiteralNode(stream.next))
     }
 
