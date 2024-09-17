@@ -15,6 +15,21 @@ case class SyntaxTree(root: RootNode) {
 
     prettyPrintNode(root, 0)
   }
+  
+  def prettyPrintTyped: String = {
+    def prettyPrintNode(node: SyntaxTreeNode, indent: Int): String = {
+      val indentation = "  " * indent
+      val children = node.children.map(prettyPrintNode(_, indent + 1)).mkString("\n")
+      node match {
+        case typedNode: TypedSyntaxTreeNode =>
+          s"$indentation$typedNode (type=${typedNode.nodeType})\n$children"
+        case _ =>
+          s"$indentation$node\n$children"
+      }
+    }
+
+    prettyPrintNode(root, 0)
+  }
 }
 
 sealed trait SyntaxTreeNode {

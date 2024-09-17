@@ -21,6 +21,9 @@ class DefaultTypeInference extends TypeInference {
       case typedNode: TypedSyntaxTreeNode => processTypedNode(actualBlock, typedNode)
       case _ =>
     }
+
+    val substitutions = mutable.Map[String, LazyType]()
+    TypeSynthesizer.updateNodeTypes(actualBlock, node, substitutions)
   }
 
   override def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): LazyType = {
@@ -35,9 +38,10 @@ class DefaultTypeInference extends TypeInference {
         println(s"Function: (${block.id}, $typeFun)")
         block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
+        println(s"Reference: $referenceNode at ${block.id}")
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
       case assignmentNode: AssignmentNode =>
-        val bodyType = block.lazyDefinitions(assignmentNode.value)
+        val bodyType = processTypedNode(block, assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
         block.lazyRegisterSymbol(assignmentNode.name, bodyType)
       case _ => {

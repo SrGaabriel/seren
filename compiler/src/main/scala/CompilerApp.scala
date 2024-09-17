@@ -2,7 +2,7 @@ package me.gabriel.seren.compiler
 
 import me.gabriel.seren.analyzer.TypeEnvironment
 import me.gabriel.seren.analyzer.inference.LazySymbolBlock.toLazySymbolBlock
-import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBlock}
+import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBlock, TypeSynthesizer}
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
 import me.gabriel.seren.frontend.parser.{DefaultParser, Parser}
 import me.gabriel.seren.frontend.struct.TokenStream
@@ -26,16 +26,18 @@ object CompilerApp extends App {
       println(s"Parsing Error: ${error.message}")
       sys.exit(1)
     },
-    tree => println(tree.prettyPrint)
+    tree => println(tree.prettyPrintTyped)
   )
 
-  private val root = syntaxTree.right.get.root
+  private val tree = syntaxTree.right.get
+  private val root = tree.root
   private val typeEnvironment = new TypeEnvironment("main", root)
   private val typeInference = new DefaultTypeInference
   private val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
   
   typeInference.traverseBottomUp(lazyTypeRoot, root)
-  lazyTypeRoot.prettyPrintLazyTypes()
+  println("===========================")
+  println(tree.prettyPrintTyped)
 
   private def getSourceCode(): String = {
     val file = new java.io.File("app.sr")
