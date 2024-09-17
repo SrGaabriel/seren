@@ -33,17 +33,18 @@ class DefaultTypeInference extends TypeInference {
           to = TypeLiteral(node.nodeType)
         )
         println(s"Function: (${block.id}, $typeFun)")
-        block.registerLazyType(functionNode, typeFun)
+        block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
-        block.registerLazyType(referenceNode, TypeVariable(referenceNode.name))
+        block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
       case assignmentNode: AssignmentNode =>
-        val bodyType = block.lazyTypes(assignmentNode.value)
-        block.registerLazyType(assignmentNode, bodyType)
+        val bodyType = block.lazyDefinitions(assignmentNode.value)
+        block.lazyDefine(assignmentNode, bodyType)
+        block.lazyRegisterSymbol(assignmentNode.name, bodyType)
       case _ => {
         if (node.nodeType == Type.Unknown) {
           println(s"Warning: registering unknown typed node $node")
         }
-        block.registerLazyType(node, TypeLiteral(node.nodeType))
+        block.lazyDefine(node, TypeLiteral(node.nodeType))
       }
     }
   }

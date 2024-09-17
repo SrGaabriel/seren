@@ -12,7 +12,8 @@ class LazySymbolBlock(
                      parent: Option[LazySymbolBlock],
                      children: mutable.ListBuffer[SymbolBlock]
                      ) extends SymbolBlock(module, parent, id, children) {
-  val lazyTypes: mutable.Map[SyntaxTreeNode, LazyType] = mutable.Map[SyntaxTreeNode, LazyType]()
+  val lazyDefinitions: mutable.Map[SyntaxTreeNode, LazyType] = mutable.Map[SyntaxTreeNode, LazyType]()
+  val lazySymbols: mutable.Map[String, LazyType] = mutable.Map[String, LazyType]()
   
   override def createChild(id: SyntaxTreeNode): LazySymbolBlock = {
     val child = new LazySymbolBlock(module, id, Some(this), mutable.ListBuffer())
@@ -20,15 +21,20 @@ class LazySymbolBlock(
     child
   }
 
-  def registerLazyType(node: SyntaxTreeNode, lazyType: LazyType): LazyType = {
-    lazyTypes(node) = lazyType
+  def lazyDefine(node: SyntaxTreeNode, lazyType: LazyType): LazyType = {
+    lazyDefinitions(node) = lazyType
+    lazyType
+  }
+  
+  def lazyRegisterSymbol(name: String, lazyType: LazyType): LazyType = {
+    lazySymbols(name) = lazyType
     lazyType
   }
   
   def prettyPrintLazyTypes(): Unit = {
     def printBlock(block: LazySymbolBlock, indent: Int): Unit = {
-      println(">  " * indent + block.id + s" => ${block.lazyTypes.size} types")
-      block.lazyTypes.foreach { case (node, lazyType) =>
+      println(">  " * indent + block.id + s" => ${block.lazyDefinitions.size} types")
+      block.lazyDefinitions.foreach { case (node, lazyType) =>
         println("  " * (indent + 1) + s"$node -> $lazyType")
       }
       block.children.foreach(child => printBlock(child, indent + 1))
