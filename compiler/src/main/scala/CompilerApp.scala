@@ -1,6 +1,7 @@
 package me.gabriel.seren.compiler
 
 import me.gabriel.seren.analyzer.TypeEnvironment
+import me.gabriel.seren.analyzer.impl.DefaultSemanticAnalysisManager
 import me.gabriel.seren.analyzer.inference.LazySymbolBlock.toLazySymbolBlock
 import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBlock, TypeSynthesizer}
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
@@ -38,6 +39,14 @@ object CompilerApp extends App {
   typeInference.traverseBottomUp(lazyTypeRoot, root)
   println("===========================")
   println(tree.prettyPrintTyped)
+
+  val analysisManager = DefaultSemanticAnalysisManager()
+  val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
+  if (analysisResult.errors.nonEmpty) {
+    println(s"There have been ${analysisResult.errors.size} errors:")
+    analysisResult.errors.foreach(error => println(s"  |${error.getClass.getSimpleName}: ${error.message}"))
+    sys.exit(1)
+  }
 
   private def getSourceCode(): String = {
     val file = new java.io.File("app.sr")
