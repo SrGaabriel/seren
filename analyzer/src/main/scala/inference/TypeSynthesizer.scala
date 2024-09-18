@@ -1,31 +1,49 @@
 package me.gabriel.seren.analyzer
 package inference
 
+import me.gabriel.seren.analyzer.external.ModuleManager
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.{SyntaxTreeNode, TypedSyntaxTreeNode}
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 object TypeSynthesizer {
-  def updateNodeTypes(block: LazySymbolBlock, node: SyntaxTreeNode, substitutions: mutable.Map[String, LazyType]): Unit = {
+  def updateNodeTypes(
+                       module: ModuleManager,
+                       block: LazySymbolBlock,
+                       node: SyntaxTreeNode,
+                       substitutions: mutable.Map[String, LazyType]
+                     ): Unit = {
     node match {
       case typedNode: TypedSyntaxTreeNode =>
         val inferredLazyType = block.lazyDefinitions(typedNode)
         val resolvedLazyType = resolveType(inferredLazyType, substitutions)
-        val finalType = lazyTypeToType(block, resolvedLazyType)
+        val finalType = lazyTypeToType(module, block, resolvedLazyType)
 
         typedNode.nodeType = finalType
       case _ =>
     }
   }
 
-  def lazyTypeToType(block: LazySymbolBlock, lazyType: LazyType): Type = {
+  @tailrec
+  def lazyTypeToType(
+                      module: ModuleManager,
+                      block: LazySymbolBlock,
+                      lazyType: LazyType
+                    ): Type = {
     lazyType match {
       case TypeLiteral(actualType) => actualType
       case TypeFunction(from, to) =>
-        lazyTypeToType(block, to)
+        lazyTypeToType(module, block, to)
       case TypeVariable(name) =>
-        lazyTypeToType(block, block.lazySymbols(name))
+        lazyTypeToType(module, block, block.lazySymbols(name))
+      case TypeCall(name, params) =>
+        val functionPackage = module.searchFunction(name)
+        functionPackage match {
+          case Some(function) => function.returnType
+          case None => Type.Unknown
+        }
     }
   }
 
@@ -43,8 +61,7 @@ object TypeSynthesizer {
           resolveType(to, substitutions)
         )
 
-      case TypeLiteral(_) =>
-        lazyType
+      case _ => lazyType
     }
   }
 

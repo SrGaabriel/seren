@@ -1,11 +1,12 @@
 package me.gabriel.seren.compiler
 
 import me.gabriel.seren.analyzer.TypeEnvironment
+import me.gabriel.seren.analyzer.external.{Directive, ModuleManager}
 import me.gabriel.seren.analyzer.impl.DefaultSemanticAnalysisManager
 import me.gabriel.seren.analyzer.inference.LazySymbolBlock.toLazySymbolBlock
 import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBlock, TypeSynthesizer}
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
-import me.gabriel.seren.frontend.parser.{DefaultParser, Parser}
+import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
 import me.gabriel.seren.frontend.struct.TokenStream
 
 object CompilerApp extends App {
@@ -30,13 +31,22 @@ object CompilerApp extends App {
     tree => println(tree.prettyPrintTyped)
   )
 
+  private val moduleManager = ModuleManager(
+    directive = Directive(module = "root", subdirectories = List.empty)
+  )
+  moduleManager.addLocalFunction(
+    name = "print_line",
+    params = List(Type.Any),
+    returnType = Type.Void
+  )
+
   private val tree = syntaxTree.right.get
   private val root = tree.root
   private val typeEnvironment = new TypeEnvironment("main", root)
   private val typeInference = new DefaultTypeInference
   private val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
   
-  typeInference.traverseBottomUp(lazyTypeRoot, root)
+  typeInference.traverseBottomUp(moduleManager, lazyTypeRoot, root)
   println("===========================")
   println(tree.prettyPrintTyped)
 

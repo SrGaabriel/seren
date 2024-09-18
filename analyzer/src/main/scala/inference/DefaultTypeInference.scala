@@ -1,32 +1,51 @@
 package me.gabriel.seren.analyzer
 package inference
 
-import scala.collection.mutable
+import me.gabriel.seren.analyzer.external.ModuleManager
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionDeclarationNode, ReferenceNode, ReturnNode, SyntaxTreeNode, TypedSyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.*
+
+import scala.collection.mutable
 
 class DefaultTypeInference extends TypeInference {
   private var typeVarCounter = 0
   private def newTypeVar(): LazyType = TypeVariable(s"t${typeVarCounter += 1; typeVarCounter}")
 
-  override def traverseBottomUp(block: LazySymbolBlock, node: SyntaxTreeNode): Unit = {
+  override def traverseBottomUp(
+                                 module: ModuleManager,
+                                 block: LazySymbolBlock,
+                                 node: SyntaxTreeNode
+                               ): Unit = {
     val actualBlock = node match {
-      case function: FunctionDeclarationNode => block.createChild(function)
+      case function: FunctionDeclarationNode => {
+        module.addLocalFunction(
+          name = function.name,
+          params = function.parameters.map(p => p.nodeType),
+          returnType = function.returnType
+        )
+        block.createChild(function)
+      }
       case _ => block
     }
 
-    node.children.foreach(traverseBottomUp(actualBlock, _))
+    node.children.foreach(traverseBottomUp(module, actualBlock, _))
 
     node match {
-      case typedNode: TypedSyntaxTreeNode => processTypedNode(actualBlock, typedNode)
+      case typedNode: TypedSyntaxTreeNode => processTypedNode(
+        block = actualBlock,
+        node = typedNode
+      )
       case _ =>
     }
 
     val substitutions = mutable.Map[String, LazyType]()
-    TypeSynthesizer.updateNodeTypes(actualBlock, node, substitutions)
+    TypeSynthesizer.updateNodeTypes(module, actualBlock, node, substitutions)
   }
 
-  override def processTypedNode(block: LazySymbolBlock, node: TypedSyntaxTreeNode): LazyType = {
+  override def processTypedNode(
+                                 block: LazySymbolBlock,
+                                 node: TypedSyntaxTreeNode
+                               ): LazyType = {
     node match {
       case functionNode: FunctionDeclarationNode =>
         val paramTypes = functionNode.parameters.map(_ => newTypeVar())
@@ -38,12 +57,15 @@ class DefaultTypeInference extends TypeInference {
         println(s"Function: (${block.id}, $typeFun)")
         block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
-        println(s"Reference: $referenceNode at ${block.id}")
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
       case assignmentNode: AssignmentNode =>
         val bodyType = processTypedNode(block, assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
         block.lazyRegisterSymbol(assignmentNode.name, bodyType)
+      case callNode: FunctionCallNode =>
+        block.lazyDefine(callNode, TypeCall(callNode.name, callNode.arguments.map(
+          argument => processTypedNode(block,argument)
+        )))
       case _ => {
         if (node.nodeType == Type.Unknown) {
           println(s"Warning: registering unknown typed node $node")

@@ -84,7 +84,7 @@ case class FunctionDeclarationNode(
   override def toString: String = s"FunctionDeclarationNode($name, $parameters, $returnType)"
 }
 
-case class FunctionParameterNode(token: Token, name: String) extends SyntaxTreeNode {
+case class FunctionParameterNode(token: Token, name: String, var nodeType: Type) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
   override def toString: String = s"FunctionParameterNode($name)"
@@ -93,7 +93,7 @@ case class FunctionParameterNode(token: Token, name: String) extends SyntaxTreeN
 case class FunctionCallNode(
                             token: Token,
                             name: String,
-                            arguments: List[SyntaxTreeNode]
+                            arguments: List[TypedSyntaxTreeNode]
                             ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
   var nodeType: Type = Type.Unknown

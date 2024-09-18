@@ -20,6 +20,7 @@ class DefaultSemanticAnalysisManager extends SemanticAnalysisManager {
   def magicallyAnalyzeNode(block: SymbolBlock, node: SyntaxTreeNode, currentResult: AnalysisResult): Unit = {
     val newBlock = node match {
       case node: AssignmentNode => analyzeNode(block, node, currentResult)
+      case node: FunctionDeclarationNode => analyzeNode(block, node, currentResult)
       case _ => block
     }
 
@@ -33,6 +34,4 @@ class DefaultSemanticAnalysisManager extends SemanticAnalysisManager {
                     )(implicit analyzer: SemanticAnalyzer[T]): SymbolBlock = {
     analyzer.analyze(block, node, currentResult)
   }
-
-
 }

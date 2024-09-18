@@ -2,6 +2,7 @@ package me.gabriel.seren.frontend
 package parser
 
 enum Type:
+  case Any
   case Byte
   case Short
   case Int
