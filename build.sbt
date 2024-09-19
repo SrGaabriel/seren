@@ -32,5 +32,7 @@ lazy val tianlong = (project in file("tianlong"))
   .aggregate(frontend, analyzer, compiler)
   .settings(
     name := "tianlong",
-    idePackagePrefix := Some("me.gabriel.tianlong")
+    idePackagePrefix := Some("me.gabriel.tianlong"),
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test
   )
+
