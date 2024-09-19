@@ -3,12 +3,29 @@ package inference
 
 import me.gabriel.seren.analyzer.external.ModuleManager
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.{SyntaxTreeNode, TypedSyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, SyntaxTreeNode, TypedSyntaxTreeNode}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
 
 object TypeSynthesizer {
+  def updateTreeTypes(
+                        module: ModuleManager,
+                        rootBlock: LazySymbolBlock
+                      ): Unit = {
+    def updateBlockTypes(block: LazySymbolBlock): Unit = {
+      block.children.foreach { case childBlock: LazySymbolBlock =>
+        updateBlockTypes(childBlock)
+      }
+
+      block.lazyDefinitions.foreach { case (node, lazyType) =>
+        updateNodeTypes(module, block, node, mutable.Map())
+      }
+    }
+
+    updateBlockTypes(rootBlock)
+  }
+
   def updateNodeTypes(
                        module: ModuleManager,
                        block: LazySymbolBlock,
@@ -17,6 +34,7 @@ object TypeSynthesizer {
                      ): Unit = {
     node match {
       case typedNode: TypedSyntaxTreeNode =>
+        println(s"At block ${block.id} searching for ${typedNode.hashCode()} at ${block.lazyDefinitions.map((key, value) => key.hashCode())}")
         val inferredLazyType = block.lazyDefinitions(typedNode)
         val resolvedLazyType = resolveType(inferredLazyType, substitutions)
         val finalType = lazyTypeToType(module, block, resolvedLazyType)
@@ -40,6 +58,7 @@ object TypeSynthesizer {
         lazyTypeToType(module, block, block.lazySymbols(name))
       case TypeCall(name, params) =>
         val functionPackage = module.searchFunction(name)
+        println(s"Function: ${functionPackage} found at for $name ${module.packages}")
         functionPackage match {
           case Some(function) => function.returnType
           case None => Type.Unknown

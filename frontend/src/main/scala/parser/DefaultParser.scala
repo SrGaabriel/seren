@@ -9,9 +9,11 @@ import struct.{BinaryOp, Token, TokenKind, TokenStream}
 class DefaultParser extends Parser {
     def parse(stream: TokenStream): Either[ParsingError, SyntaxTree] = {
         val bof = stream.next
-        val topLevelDeclaration = parseTopLevelDeclaration(stream)
-        val root = topLevelDeclaration.map(exp => RootNode(bof, List(exp)))
-        root.map(SyntaxTree.apply)
+        val topLevelDeclarations = parseExhaustiveSequence(stream, TokenKind.EOF, parseTopLevelDeclaration)
+        topLevelDeclarations match {
+            case Left(error) => Left(error)
+            case Right(declarations) => Right(SyntaxTree(RootNode(bof, declarations)))
+        }
     }
 
     private def parseTopLevelDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
@@ -49,6 +51,7 @@ class DefaultParser extends Parser {
     private def parseStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
         stream.peek.kind match {
             case TokenKind.Identifier => parseIdentifierStatement(stream)
+            case TokenKind.Return => parseReturnStatement(stream)
             case _ => parseExpression(stream)
         }
     }
@@ -76,6 +79,13 @@ class DefaultParser extends Parser {
             case TokenKind.LeftParenthesis => parseFunctionCall(stream, identifier)
             case _ => Right(ReferenceNode(identifier, identifier.value, Type.Unknown))
         }
+    }
+
+    private def parseReturnStatement(stream: TokenStream): Either[ParsingError, ReturnNode] = {
+        for {
+            returnToken <- consumeToken(stream, TokenKind.Return)
+            expression <- parseExpression(stream)
+        } yield ReturnNode(returnToken, expression)
     }
 
     private def parseFunctionCall(stream: TokenStream, identifier: Token): Either[ParsingError, FunctionCallNode] = {
@@ -142,6 +152,22 @@ class DefaultParser extends Parser {
             _ <- consumeToken(stream, TokenKind.Assign)
             expression <- parseExpression(stream)
         } yield AssignmentNode(identifierToken, identifierToken.value, expression)
+    }
+
+    private def parseExhaustiveSequence[T <: SyntaxTreeNode](
+                               stream: TokenStream,
+                               end: TokenKind,
+                               parser: TokenStream => Either[ParsingError, T]
+                             ): Either[ParsingError, List[T]] = {
+        val nodes = collection.mutable.ListBuffer.empty[T]
+        while (stream.peek.kind != end && stream.peek.kind != TokenKind.EOF) {
+            val node = parser(stream)
+            node match {
+                case Left(error) => return Left(error)
+                case Right(n) => nodes += n
+            }
+        }
+        consumeToken(stream, end).map(_ => nodes.toList)
     }
 
     private def parseSequence[T <: SyntaxTreeNode](

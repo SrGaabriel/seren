@@ -12,8 +12,8 @@ class LazySymbolBlock(
                      parent: Option[LazySymbolBlock],
                      children: mutable.ListBuffer[SymbolBlock]
                      ) extends SymbolBlock(module, parent, id, children) {
-  val lazyDefinitions: mutable.Map[SyntaxTreeNode, LazyType] = mutable.Map[SyntaxTreeNode, LazyType]()
-  val lazySymbols: mutable.Map[String, LazyType] = mutable.Map[String, LazyType]()
+  val lazyDefinitions: mutable.HashMap[SyntaxTreeNode, LazyType] = mutable.HashMap[SyntaxTreeNode, LazyType]()
+  val lazySymbols: mutable.HashMap[String, LazyType] = mutable.HashMap[String, LazyType]()
   
   override def createChild(id: SyntaxTreeNode): LazySymbolBlock = {
     val child = new LazySymbolBlock(module, id, Some(this), mutable.ListBuffer())

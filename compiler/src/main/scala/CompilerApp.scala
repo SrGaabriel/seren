@@ -47,6 +47,7 @@ object CompilerApp extends App {
   private val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
   
   typeInference.traverseBottomUp(moduleManager, lazyTypeRoot, root)
+  TypeSynthesizer.updateTreeTypes(moduleManager, lazyTypeRoot)
   println("===========================")
   println(tree.prettyPrintTyped)
 

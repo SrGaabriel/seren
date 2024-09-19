@@ -1,11 +1,10 @@
 package me.gabriel.seren.analyzer
 package inference
 
-import me.gabriel.seren.analyzer.external.ModuleManager
+import external.ModuleManager
+
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
-
-import scala.collection.mutable
 
 class DefaultTypeInference extends TypeInference {
   private var typeVarCounter = 0
@@ -37,9 +36,6 @@ class DefaultTypeInference extends TypeInference {
       )
       case _ =>
     }
-
-    val substitutions = mutable.Map[String, LazyType]()
-    TypeSynthesizer.updateNodeTypes(module, actualBlock, node, substitutions)
   }
 
   override def processTypedNode(
@@ -54,7 +50,6 @@ class DefaultTypeInference extends TypeInference {
           from = paramTypes,
           to = TypeLiteral(node.nodeType)
         )
-        println(s"Function: (${block.id}, $typeFun)")
         block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))

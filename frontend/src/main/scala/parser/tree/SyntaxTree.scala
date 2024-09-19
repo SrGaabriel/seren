@@ -51,11 +51,11 @@ case class NumericNode(token: Token, var nodeType: Type) extends TypedSyntaxTree
   override def toString: String = s"NumericNode(${token.value})"
 }
 
-case class BinaryOperationNode(
-                                token: Token,
-                                op: BinaryOp,
-                                left: TypedSyntaxTreeNode,
-                                right: TypedSyntaxTreeNode,
+class BinaryOperationNode(
+                                val token: Token,
+                                val op: BinaryOp,
+                                val left: TypedSyntaxTreeNode,
+                                val right: TypedSyntaxTreeNode,
                               ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(left, right)
   var nodeType: Type = left.nodeType
@@ -78,9 +78,7 @@ case class FunctionDeclarationNode(
                                   returnType: Type,
                                   parameters: List[FunctionParameterNode],
                                   children: List[SyntaxTreeNode]
-                                  ) extends TypedSyntaxTreeNode {
-  var nodeType: Type = returnType
-  
+                                  ) extends SyntaxTreeNode {
   override def toString: String = s"FunctionDeclarationNode($name, $parameters, $returnType)"
 }
 
@@ -90,10 +88,10 @@ case class FunctionParameterNode(token: Token, name: String, var nodeType: Type)
   override def toString: String = s"FunctionParameterNode($name)"
 }
 
-case class FunctionCallNode(
-                            token: Token,
-                            name: String,
-                            arguments: List[TypedSyntaxTreeNode]
+class FunctionCallNode(
+                            val token: Token,
+                            val name: String,
+                            val arguments: List[TypedSyntaxTreeNode]
                             ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
   var nodeType: Type = Type.Unknown
@@ -101,21 +99,20 @@ case class FunctionCallNode(
   override def toString: String = s"FunctionCallNode($name, $arguments)"
 }
 
-case class ReturnNode(token: Token, value: TypedSyntaxTreeNode) extends TypedSyntaxTreeNode {
+case class ReturnNode(token: Token, value: TypedSyntaxTreeNode) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(value)
-  var nodeType: Type = value.nodeType
 
   override def toString: String = s"ReturnNode($value)"
 }
 
-case class AssignmentNode(token: Token, name: String, value: TypedSyntaxTreeNode) extends TypedSyntaxTreeNode {
+class AssignmentNode(val token: Token, val name: String, val value: TypedSyntaxTreeNode) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(value)
   var nodeType: Type = value.nodeType
 
   override def toString: String = s"AssignmentNode($name, $value)"
 }
 
-case class ReferenceNode(token: Token, name: String, var nodeType: Type) extends TypedSyntaxTreeNode {
+class ReferenceNode(val token: Token, val name: String, var nodeType: Type) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
   override def toString: String = s"ReferenceNode($name)"
