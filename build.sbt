@@ -21,3 +21,16 @@ lazy val compiler = (project in file("compiler"))
     idePackagePrefix := Some("me.gabriel.seren.compiler")
   )
   .dependsOn(analyzer)
+
+lazy val llvm = (project in file("llvm"))
+  .settings(
+    name := "seren-llvm",
+    idePackagePrefix := Some("me.gabriel.seren.llvm")
+  )
+
+lazy val tianlong = (project in file("tianlong"))
+  .aggregate(frontend, analyzer, compiler)
+  .settings(
+    name := "tianlong",
+    idePackagePrefix := Some("me.gabriel.tianlong")
+  )
