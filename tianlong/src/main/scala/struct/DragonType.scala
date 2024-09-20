@@ -31,3 +31,11 @@ object DragonType {
 
   case object StaticPointer extends DragonType("ptr", bytes = 1)
 }
+
+extension (dragonType: DragonType) {
+  def isPointer: Boolean = dragonType match {
+    case _: DragonType.ContextualPointer => true
+    case DragonType.StaticPointer => true
+    case _ => false
+  }
+}

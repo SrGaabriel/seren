@@ -1,7 +1,12 @@
 package me.gabriel.tianlong
 package function
 
+import statement.DragonStatement
 import struct.{DragonType, MemoryReference}
+
+import scala.collection.mutable
+
+
 
 class DragonFunction(
                       val module: DragonModule,
@@ -9,5 +14,5 @@ class DragonFunction(
                       val parameters: List[MemoryReference],
                       val returnType: DragonType
                     ) {
-  val statements = List.empty[statement.DragonStatement]
+  val statements: mutable.ListBuffer[DragonStatement] = mutable.ListBuffer.empty
 }

@@ -1,10 +1,12 @@
-import me.gabriel.tianlong.TianlongModule
-import me.gabriel.tianlong.struct.DragonType
-import me.gabriel.tianlong.transcriber.TianlongIrTranscriber
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.*
+package me.gabriel.tianlong
 
-class Basic extends AnyFlatSpec {
+import struct.DragonType
+import transcriber.TianlongIrTranscriber
+
+import org.scalatest.*
+import org.scalatest.flatspec.AnyFlatSpec
+
+class Transcribing extends AnyFlatSpec {
 
   "A simple function" should "be properly transcribed" in {
     val module = new TianlongModule()
