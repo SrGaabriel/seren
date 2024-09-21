@@ -9,7 +9,9 @@ case class AssignStatement(
                           ) extends DragonStatement {
   override val memoryDependencies: List[ValueReference] = List(memory).concat(value.memoryDependencies)
 
-  override def llvm: String = s"%${memory.register} = ${value.llvm}"
+  override def valid: Boolean = true
+
+  override def statementLlvm: String = s"%${memory.register} = ${value.llvm}"
 }
 
 case class StoreStatement(
@@ -20,7 +22,7 @@ case class StoreStatement(
 
   override def valid: Boolean = pointer.dragonType.isPointer
 
-  override def llvm: String = s"store ${value.dragonType.llvm} ${value.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
+  override def statementLlvm: String = s"store ${value.dragonType.llvm} ${value.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
 }
 
 case class AllocateStatement(
@@ -31,5 +33,5 @@ case class AllocateStatement(
 
   override def valid: Boolean = true
 
-  override def llvm: String = s"alloca ${allocationType.dragonType.llvm}, align $alignment"
+  override def statementLlvm: String = s"alloca ${allocationType.dragonType.llvm}, align $alignment"
 }

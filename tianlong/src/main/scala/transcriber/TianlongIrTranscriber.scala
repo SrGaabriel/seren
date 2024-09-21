@@ -28,7 +28,7 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
     sb.append(s"define ${function.returnType.llvm} @${function.name}(")
     sb.append(function.parameters.map(param => s"${param.dragonType.llvm} ${param.llvm}").mkString(", "))
     sb.append(") {\n")
-    sb.append(function.statements.map(statement => s"  ${statement.llvm}").mkString("\n"))
+    sb.append(function.statements.map(statement => s"  ${statement.statementLlvm}").mkString("\n"))
     sb.append("}")
     sb.toString()
   }

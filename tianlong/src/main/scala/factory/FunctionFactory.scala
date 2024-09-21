@@ -2,9 +2,8 @@ package me.gabriel.tianlong
 package factory
 
 import function.DragonFunction
-import statement.{DragonStatement, StoreStatement, TypedDragonStatement}
-
-import me.gabriel.tianlong.struct.{MemoryReference, ValueReference}
+import statement.{AddStatement, AllocateStatement, AssignStatement, DragonStatement, StoreStatement, TypedDragonStatement}
+import struct.{MemoryReference, ValueReference}
 
 class FunctionFactory(
                      val function: DragonFunction
@@ -24,16 +23,23 @@ class FunctionFactory(
     statement(StoreStatement(value, target))
   }
 
-  def allocate(allocationType: ValueReference, alignment: Int): MemoryReference = {
-    statement(AllocateStatement(allocationType, alignment))
+  def allocate(allocationType: ValueReference, alignment: Int): AllocateStatement = {
+    AllocateStatement(allocationType, alignment)
+  }
+  
+  def add(left: ValueReference, right: ValueReference): AddStatement = {
+    AddStatement(left, right)
   }
 
-  def assign(statement: TypedDragonStatement, constantOverride: Option[Boolean] = None): MemoryReference = {
-    val constant = constantOverride.getOrElse(statement match {
+  def assign(typedStatement: TypedDragonStatement, constantOverride: Option[Boolean] = None): MemoryReference = {
+    val constant = constantOverride.getOrElse(typedStatement match {
       // TODO: pure calls
       case _ => false
     })
-    
-    val memoryReference = MemoryReference(currentRegister, statement.statementType)
+
+    val memoryReference = MemoryReference(currentRegister, typedStatement.statementType)
+    val assignment = AssignStatement(memoryReference, typedStatement)
+    statement(assignment)
+    memoryReference
   }
 }
