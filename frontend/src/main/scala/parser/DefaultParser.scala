@@ -35,7 +35,7 @@ class DefaultParser extends Parser {
                 case Left(_) => Right(Type.Void)
             }
             _ <- consumeToken(stream, TokenKind.LeftBrace)
-            body <- parseSequence(stream, TokenKind.SemiColon, TokenKind.RightBrace, parseStatement)
+            body <- parseSequence(stream, TokenKind.NewLine, TokenKind.RightBrace, parseStatement)
         } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, body)
     }
 
@@ -204,7 +204,7 @@ class DefaultParser extends Parser {
             stream.next
             Right(token)
         } else {
-            Left(UnexpectedTokenError(token))
+            Left(ExpectedTokenError(token, kind))
         }
     }
 

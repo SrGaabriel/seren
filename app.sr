@@ -1,9 +1,9 @@
 fn main() : int32 {
-    a := "Hello, World!";
-    b := a;
-    print_line(test());
+    a := "Hello, World!"
+    b := a
+    print_line(test())
 }
 
 fn test() : int32 {
-    ret 5;
+    ret 5
 }

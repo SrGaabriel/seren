@@ -1,7 +1,7 @@
 package me.gabriel.seren.frontend
 package error
 
-import struct.Token
+import struct.{Token, TokenKind}
 
 sealed trait ParsingError extends Error {
   val message: String
@@ -11,6 +11,10 @@ sealed trait ParsingError extends Error {
 object ParsingError {
   case class UnexpectedTokenError(token: Token) extends ParsingError {
     override val message: String = s"Unexpected token: $token"
+  }
+  
+  class ExpectedTokenError(val token: Token, val expected: TokenKind) extends ParsingError {
+    override val message: String = s"Expected $expected, found $token"
   }
 
   case class InvalidBinaryOpError(token: Token) extends ParsingError {

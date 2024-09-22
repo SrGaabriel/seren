@@ -11,7 +11,7 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
     s"""
       |$dependencies
       |
-      |$functions
+      |$functions,
       |""".stripMargin
   }
 

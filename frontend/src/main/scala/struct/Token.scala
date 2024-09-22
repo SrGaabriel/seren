@@ -8,6 +8,7 @@ enum TokenKind:
   case NumberLiteral
   case Plus
   case Minus
+  case NewLine
   case StringLiteral
   case Let
   case SemiColon

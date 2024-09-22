@@ -18,7 +18,8 @@ class DefaultLexer extends Lexer {
       val currentChar = input(position)
 
       currentChar match {
-        case ' ' | '\t' | '\n' | '\r' => position += 1
+        case ' ' | '\t' | '\r' => position += 1
+        case '\n' => addToken("\n", TokenKind.NewLine)
         case '+' => addToken("+", TokenKind.Plus)
         case '-' => addToken("-", TokenKind.Minus)
         case '*' => addToken("*", TokenKind.Multiply)
@@ -28,14 +29,13 @@ class DefaultLexer extends Lexer {
         case '^' => addToken("^", TokenKind.Exponentiation)
         case '{' => addToken("{", TokenKind.LeftBrace)
         case '}' => addToken("}", TokenKind.RightBrace)
-        case ';' => addToken(";", TokenKind.SemiColon)
-        case ':' => {
+//        case ';' => addToken(";", TokenKind.SemiColon)
+        case ':' =>
           if (input(position + 1) == '=') {
             addToken(":=", TokenKind.Assign)
           } else {
             addToken(":", TokenKind.TypeDeclaration)
           }
-        }
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
@@ -61,6 +61,69 @@ class DefaultLexer extends Lexer {
     }
 
     tokens += Token("", TokenKind.EOF)
-    Right(tokens.toList)
+    Right(optimizeTokenStream(tokens.toList))
+  }
+
+  def optimizeTokenStream(tokens: List[Token]): List[Token] = {
+    val result = scala.collection.mutable.ListBuffer[Token]()
+    var i = 0
+
+    while (i < tokens.length) {
+      val current = tokens(i)
+
+      if (current.kind == TokenKind.NewLine) {
+        var j = i + 1
+        // Skip consecutive newlines
+        while (j < tokens.length && tokens(j).kind == TokenKind.NewLine) {
+          j += 1
+        }
+
+        // Check if we should keep this newline
+        if (i > 0 && j < tokens.length &&
+          !DefaultLexer.precedingExclusions.contains(tokens(i - 1).kind) &&
+          !DefaultLexer.followingExclusions.contains(tokens(j).kind)) {
+          result += current
+        }
+
+        i = j // Move to the token after all consecutive newlines
+      } else {
+        result += current
+        i += 1
+      }
+    }
+
+    result.toList
+  }
+
+  object DefaultLexer {
+    val precedingExclusions: Set[TokenKind] = Set(
+      TokenKind.LeftParenthesis,
+      TokenKind.LeftBrace,
+      TokenKind.Comma,
+      TokenKind.Plus,
+      TokenKind.Minus,
+      TokenKind.Multiply,
+      TokenKind.Divide,
+      TokenKind.Exponentiation,
+      TokenKind.Assign,
+      TokenKind.Let,
+      TokenKind.Function,
+      TokenKind.Return,
+      TokenKind.BOF // Add BOF to remove leading newlines
+    )
+
+    val followingExclusions: Set[TokenKind] = Set(
+      TokenKind.RightParenthesis,
+      TokenKind.RightBrace,
+      TokenKind.Comma,
+      TokenKind.Plus,
+      TokenKind.Minus,
+      TokenKind.Multiply,
+      TokenKind.Divide,
+      TokenKind.Exponentiation,
+      TokenKind.SemiColon,
+      TokenKind.Function,
+      TokenKind.EOF,
+    )
   }
 }
