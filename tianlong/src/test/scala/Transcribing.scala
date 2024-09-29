@@ -23,8 +23,9 @@ class Transcribing extends AnyFlatSpec {
     function.assign(function.add(ConstantReference.Number("2", Int32), ConstantReference.Number("1", Int32)))
     val transcriber = new TianlongIrTranscriber()
     val result = transcriber.transcribe(module)
+    println(result)
     assertContentEquals("define i8 @main(i8 %0, i8 %1) {" +
-      "%2 = add i32 2, 1" +
+      "  %2 = add i32 2, 1" +
       "}", result)
   }
 

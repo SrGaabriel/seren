@@ -11,7 +11,7 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
     s"""
       |$dependencies
       |
-      |$functions,
+      |$functions
       |""".stripMargin
   }
 
@@ -23,13 +23,12 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
   }
 
   def transcribeFunction(function: DragonFunction): String = {
-    // string builder
     val sb = new StringBuilder
     sb.append(s"define ${function.returnType.llvm} @${function.name}(")
     sb.append(function.parameters.map(param => s"${param.dragonType.llvm} ${param.llvm}").mkString(", "))
     sb.append(") {\n")
     sb.append(function.statements.map(statement => s"  ${statement.statementLlvm}").mkString("\n"))
-    sb.append("}")
+    sb.append("\n}")
     sb.toString()
   }
 }
