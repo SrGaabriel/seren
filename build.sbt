@@ -15,24 +15,25 @@ lazy val analyzer = (project in file("analyzer"))
   )
   .dependsOn(frontend)
 
-lazy val compiler = (project in file("compiler"))
-  .settings(
-    name := "seren-compiler",
-    idePackagePrefix := Some("me.gabriel.seren.compiler")
-  )
-  .dependsOn(analyzer)
-
-lazy val llvm = (project in file("llvm"))
-  .settings(
-    name := "seren-llvm",
-    idePackagePrefix := Some("me.gabriel.seren.llvm")
-  )
-
 lazy val tianlong = (project in file("tianlong"))
-  .aggregate(frontend, analyzer, compiler)
+  .aggregate(frontend, analyzer)
   .settings(
     name := "tianlong",
     idePackagePrefix := Some("me.gabriel.tianlong"),
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test
   )
 
+lazy val llvm = (project in file("llvm"))
+  .settings(
+    name := "seren-llvm",
+    idePackagePrefix := Some("me.gabriel.seren.llvm")
+  )
+  .dependsOn(analyzer)
+  .dependsOn(tianlong)
+
+lazy val compiler = (project in file("compiler"))
+  .settings(
+    name := "seren-compiler",
+    idePackagePrefix := Some("me.gabriel.seren.compiler")
+  )
+  .dependsOn(llvm)

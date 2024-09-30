@@ -34,8 +34,7 @@ class DefaultParser extends Parser {
                 case Right(_) => parseType(stream)
                 case Left(_) => Right(Type.Void)
             }
-            _ <- consumeToken(stream, TokenKind.LeftBrace)
-            body <- parseSequence(stream, TokenKind.NewLine, TokenKind.RightBrace, parseStatement)
+            body <- parseBlock(stream)
         } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, body)
     }
 
@@ -152,6 +151,20 @@ class DefaultParser extends Parser {
             _ <- consumeToken(stream, TokenKind.Assign)
             expression <- parseExpression(stream)
         } yield AssignmentNode(identifierToken, identifierToken.value, expression)
+    }
+    
+    private def parseBlock(stream: TokenStream): Either[ParsingError, BlockNode] = {
+        val openingBrace = consumeToken(stream, TokenKind.LeftBrace)
+        val instructions = parseSequence(
+            stream,
+            TokenKind.NewLine, 
+            TokenKind.RightBrace, 
+            parseStatement
+        )
+        for {
+            brace <- openingBrace
+            ins <- instructions
+        } yield BlockNode(brace, ins)
     }
 
     private def parseExhaustiveSequence[T <: SyntaxTreeNode](

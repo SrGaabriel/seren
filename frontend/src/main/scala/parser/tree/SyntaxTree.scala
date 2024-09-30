@@ -1,9 +1,8 @@
 package me.gabriel.seren.frontend
 package parser.tree
 
-import struct.Token
-import struct.BinaryOp
-import me.gabriel.seren.frontend.parser.Type
+import parser.Type
+import struct.{BinaryOp, Token}
 
 case class SyntaxTree(root: RootNode) {
   def prettyPrint: String = {
@@ -45,6 +44,10 @@ case class RootNode(token: Token, children: List[SyntaxTreeNode]) extends Syntax
   override def toString: String = s"RootNode(children=${children.size})"
 }
 
+case class BlockNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode {
+  override def toString: String = s"BlockNode(children=${children.size})"
+}
+
 case class NumericNode(token: Token, var nodeType: Type) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
@@ -77,8 +80,10 @@ case class FunctionDeclarationNode(
                                   name: String,
                                   returnType: Type,
                                   parameters: List[FunctionParameterNode],
-                                  children: List[SyntaxTreeNode]
+                                  block: BlockNode
                                   ) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = parameters :+ block
+
   override def toString: String = s"FunctionDeclarationNode($name, $parameters, $returnType)"
 }
 
