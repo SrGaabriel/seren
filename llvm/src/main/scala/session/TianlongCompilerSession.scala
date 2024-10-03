@@ -4,7 +4,7 @@ package session
 import `type`.dragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionDeclarationNode, NumericNode, ReturnNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionDeclarationNode, NumericNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.struct.{ConstantReference, ValueReference}
@@ -53,6 +53,7 @@ class TianlongCompilerSession(
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case number: NumericNode => generateNumber(factory, number)
+      case string: StringLiteralNode => generateString(factory, string)
       case _ => None
     }
   }
@@ -105,5 +106,17 @@ class TianlongCompilerSession(
       )
     )
     Some(factory.assign(addition))
+  }
+  
+  def generateString(
+                      factory: FunctionFactory,
+                      node: StringLiteralNode
+                    ): Option[ValueReference] = {
+    val format = factory.useFormat(
+      name = node.hashCode.toString,
+      value = node.token.value
+    )
+    
+    Some(factory.assign(format, constantOverride = Some(true)))
   }
 }

@@ -33,13 +33,4 @@ object ConstantReference {
   )) {
     override def llvm: String = s"c\"$text\\00\""
   }
-  
-  case class RoughString(
-                        text: String
-                        ) extends ConstantReference(DragonType.Array(
-    innerType = DragonType.Int8,
-    size = text.length
-  )) {
-    override def llvm: String = s"c\"$text\""
-  }
 }

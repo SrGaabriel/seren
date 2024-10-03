@@ -1,7 +1,7 @@
 package me.gabriel.tianlong
 package statement
 
-import struct.{MemoryReference, ValueReference, isPointer}
+import struct.{DragonType, MemoryReference, ValueReference, isPointer}
 
 case class AssignStatement(
                             memory: MemoryReference, 
@@ -25,13 +25,56 @@ case class StoreStatement(
   override def statementLlvm: String = s"store ${value.dragonType.llvm} ${value.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
 }
 
+case class BulkStoreStatement(
+                               values: List[ValueReference],
+                               pointer: ValueReference
+                             ) extends DragonStatement {
+  override val memoryDependencies: List[ValueReference] = values.concat(List(pointer))
+  override def valid: Boolean = pointer.dragonType.isPointer
+
+  def onlyType = values.map(_.dragonType).distinct.head
+
+  override def statementLlvm: String = {
+    val valueLlvm = values.map(value => s"${value.dragonType.llvm} ${value.llvm}").mkString(", ")
+    s"store ${onlyType.llvm} $valueLlvm, ${pointer.dragonType.llvm} ${pointer.llvm}"
+  }
+}
+
 case class AllocateStatement(
-                              allocationType: ValueReference,
+                              allocationType: DragonType,
                               alignment: Int
-                            ) extends DragonStatement {
+                            ) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List.empty
 
   override def valid: Boolean = true
+  override val statementType: DragonType = DragonType.ContextualPointer(allocationType)
 
-  override def statementLlvm: String = s"alloca ${allocationType.dragonType.llvm}, align $alignment"
+  override def statementLlvm: String = s"alloca ${allocationType.llvm}, align $alignment"
+}
+
+case class GetElementPointerStatement(
+                                     struct: ValueReference,
+                                     elementType: DragonType,
+                                     index: ValueReference,
+                                     total: Boolean = true,
+                                      inBounds: Boolean = true
+                                    ) extends TypedDragonStatement {
+  override val memoryDependencies: List[ValueReference] = List(struct, index)
+
+  override def valid: Boolean = true
+
+  override val statementType: DragonType = DragonType.ContextualPointer(elementType)
+  
+  private def originalType = struct.dragonType match {
+    case DragonType.ContextualPointer(inner) => inner
+    case regular => regular
+  }
+  private def pointerType = DragonType.ContextualPointer(originalType)
+
+  override def statementLlvm: String =
+    s"getelementptr " +
+      s"${if (inBounds) "inbounds" else ""}" +
+      s" ${originalType.llvm}, ${pointerType.llvm} ${struct.llvm}" +
+      s"${if (total) ", i32 0" else ""}${elementType.llvm} ${index.llvm}" +
+      s", ${index.dragonType.llvm} ${index.llvm}"
 }
