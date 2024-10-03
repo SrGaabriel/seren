@@ -2,7 +2,7 @@ package me.gabriel.tianlong
 package factory
 
 import function.DragonFunction
-import statement.{AddStatement, AllocateStatement, AssignStatement, DragonStatement, StoreStatement, TypedDragonStatement}
+import statement.{AddStatement, AllocateStatement, AssignStatement, DragonStatement, ReturnStatement, StoreStatement, TypedDragonStatement}
 import struct.{MemoryReference, ValueReference}
 
 class FunctionFactory(
@@ -41,5 +41,9 @@ class FunctionFactory(
     val assignment = AssignStatement(memoryReference, typedStatement)
     statement(assignment)
     memoryReference
+  }
+
+  def `return`(value: ValueReference): Unit = {
+    statement(ReturnStatement(value))
   }
 }

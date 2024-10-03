@@ -15,7 +15,8 @@ trait DragonModule {
                       parameters: List[DragonType],
                       returnType: DragonType
                     ): FunctionFactory = {
-    new FunctionFactory(addFunction(name, parameters, returnType))
+    val function = new FunctionFactory(addFunction(name, parameters, returnType))
+    function
   }
 
   def addFunction(

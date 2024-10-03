@@ -14,6 +14,7 @@ class SerenDragonCompiler {
                typeEnvironment: TypeEnvironment
              ): String = {
     val session = new TianlongCompilerSession(tree, typeEnvironment)
+    session.generateTree()
     val module = session.finish()
     transcriber.transcribe(module)
   }

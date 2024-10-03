@@ -5,7 +5,7 @@ sealed class Dependency {
 
 }
 
-object Dependency {
+case object Dependency {
   case class Constant(
                        name: String,
                        value: ValueReference

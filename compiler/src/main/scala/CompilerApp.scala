@@ -8,6 +8,7 @@ import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBloc
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
 import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
 import me.gabriel.seren.frontend.struct.TokenStream
+import me.gabriel.seren.llvm.SerenDragonCompiler
 
 object CompilerApp extends App {
   private val lexer: Lexer = new DefaultLexer
@@ -50,6 +51,7 @@ object CompilerApp extends App {
   TypeSynthesizer.updateTreeTypes(moduleManager, lazyTypeRoot)
   println("===========================")
   println(tree.prettyPrintTyped)
+  println("===========================")
 
   val analysisManager = DefaultSemanticAnalysisManager()
   val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
@@ -58,6 +60,11 @@ object CompilerApp extends App {
     analysisResult.errors.foreach(error => println(s"  |${error.getClass.getSimpleName}: ${error.message}"))
     sys.exit(1)
   }
+
+  val compiler = SerenDragonCompiler()
+  println(compiler.compile(
+    tree, typeEnvironment
+  ))
 
   private def getSourceCode(): String = {
     val file = new java.io.File("app.sr")
