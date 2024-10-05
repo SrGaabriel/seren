@@ -37,6 +37,14 @@ class FunctionFactory(
     AddStatement(left, right)
   }
 
+  def call(
+            name: String,
+            returnType: DragonType,
+            arguments: List[ValueReference]
+          ): CallStatement = {
+    CallStatement(name, returnType, arguments)
+  }
+
   def useFormat(
               name: String,
               value: String,
@@ -52,15 +60,19 @@ class FunctionFactory(
   }
 
   def assign(typedStatement: TypedDragonStatement, constantOverride: Option[Boolean] = None): MemoryReference = {
+    val memoryReference = nextMemoryReference(typedStatement.statementType)
+    val assignment = assignStatement(memoryReference, typedStatement, constantOverride)
+    statement(assignment)
+    memoryReference
+  }
+
+  def assignStatement(reference: MemoryReference, typedStatement: TypedDragonStatement, constantOverride: Option[Boolean] = None): AssignStatement = {
     val constant = constantOverride.getOrElse(typedStatement match {
       // TODO: pure calls
       case _ => false
     })
 
-    val memoryReference = MemoryReference(currentRegister, typedStatement.statementType)
-    val assignment = AssignStatement(memoryReference, typedStatement)
-    statement(assignment)
-    memoryReference
+    AssignStatement(reference, typedStatement)
   }
 
   def getElementAt(
@@ -82,5 +94,15 @@ class FunctionFactory(
 
   def `return`(value: ValueReference): FunctionFactory = {
     statement(ReturnStatement(value))
+  }
+
+  def returnStatement(value: ValueReference): ReturnStatement = {
+    ReturnStatement(value)
+  }
+  
+  def nextMemoryReference(dragonType: DragonType): MemoryReference = {
+    val memoryReference = MemoryReference(currentRegister, dragonType)
+    currentRegister += 1
+    memoryReference
   }
 }

@@ -4,9 +4,10 @@ package session
 import `type`.dragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionDeclarationNode, NumericNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
+import me.gabriel.tianlong.statement.{AddStatement, AssignStatement, CallStatement, DragonStatement, GetElementPointerStatement, TypedDragonStatement}
 import me.gabriel.tianlong.struct.{ConstantReference, ValueReference}
 
 class TianlongCompilerSession(
@@ -38,7 +39,10 @@ class TianlongCompilerSession(
     )
 
     node.block.children.foreach { child =>
-      generateFunctionInstruction(block, node, factory, false, child)
+      generateFunctionInstruction(block, node, factory, child) match {
+        case Some(statement) => factory.statement(statement)
+        case None => None
+      }
     }
   }
 
@@ -46,31 +50,59 @@ class TianlongCompilerSession(
                                    block: SymbolBlock,
                                    function: FunctionDeclarationNode,
                                    factory: FunctionFactory,
-                                   store: Boolean,
                                    node: SyntaxTreeNode
-                                 ): Option[ValueReference] = {
+                                 ): Option[DragonStatement] = {
     node match {
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case number: NumericNode => generateNumber(factory, number)
+      case call: FunctionCallNode => generateCall(block, function, factory, call)
       case string: StringLiteralNode => generateString(factory, string)
       case _ => None
     }
   }
-
+  
   def generateAssignment(
                           block: SymbolBlock,
                           function: FunctionDeclarationNode,
                           factory: FunctionFactory,
                           node: AssignmentNode
-                        ): Option[ValueReference] = {
-    generateFunctionInstruction(
+                        ): Option[AssignStatement] = {
+    val value = generateFunctionInstruction(
       block = block,
       function = function,
       factory = factory,
-      store = true,
       node = node.value
     )
+    value match {
+      case Some(statement: TypedDragonStatement) =>
+        val memory = factory.nextMemoryReference(node.nodeType.dragon)
+        Some(factory.assignStatement(memory, statement, constantOverride = None))
+      case _ => None
+    }
+  }
+
+  def generateCall(
+                    block: SymbolBlock,
+                    function: FunctionDeclarationNode,
+                    factory: FunctionFactory,
+                    node: FunctionCallNode
+                  ): Option[CallStatement] = {
+    val arguments = node.arguments.map { argument =>
+      generateFunctionInstruction(
+        block = block,
+        function = function,
+        factory = factory,
+        node = argument
+      ).get.asInstanceOf[TypedDragonStatement]
+    }
+
+    val call = factory.call(
+      name = node.name,
+      returnType = node.nodeType.dragon,
+      arguments = arguments
+    )
+    Some(call)
   }
 
   def generateReturn(
@@ -78,24 +110,23 @@ class TianlongCompilerSession(
                       function: FunctionDeclarationNode,
                       factory: FunctionFactory,
                       node: ReturnNode
-                    ): Option[ValueReference] = {
-    factory.`return`(
+                    ): Option[DragonStatement] = {
+    val returns = factory.returnStatement(
       value = generateFunctionInstruction(
         block = block,
         function = function,
         factory = factory,
-        store = false,
         node = node.value
-      ).get
+      ).get.asInstanceOf[TypedDragonStatement]
     )
-    None
+    Some(returns)
   }
 
   def generateNumber(
                       factory: FunctionFactory,
                       node: NumericNode,
-                    ): Option[ValueReference] = {
-    val addition = factory.add(
+                    ): Option[AddStatement] = {
+    Some(factory.add(
       ConstantReference.Number(
         number = node.token.value,
         dragonType = node.nodeType.dragon
@@ -104,19 +135,18 @@ class TianlongCompilerSession(
         number = "0",
         dragonType = node.nodeType.dragon
       )
-    )
-    Some(factory.assign(addition))
+    ))
   }
   
   def generateString(
                       factory: FunctionFactory,
                       node: StringLiteralNode
-                    ): Option[ValueReference] = {
+                    ): Option[GetElementPointerStatement] = {
     val format = factory.useFormat(
       name = node.hashCode.toString,
       value = node.token.value
     )
     
-    Some(factory.assign(format, constantOverride = Some(true)))
+    Some(format)
   }
 }

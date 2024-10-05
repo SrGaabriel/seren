@@ -17,3 +17,10 @@ trait TypedDragonStatement extends DragonStatement, ValueReference {
 
   override def llvm: String = statementLlvm
 }
+
+extension (value: ValueReference) {
+  def flattenValue: String = value match {
+    case statement: TypedDragonStatement => s"(${statement.llvm})"
+    case _ => value.llvm
+  }
+}

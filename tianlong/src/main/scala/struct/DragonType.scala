@@ -17,6 +17,7 @@ object DragonType {
   case object Int64 extends DragonType("i64", bytes = 8)
   case object Float32 extends DragonType("f32", bytes = 4)
   case object Float64 extends DragonType("f64", bytes = 8)
+  case object Void extends DragonType("void", bytes = 0)
 
   case class ContextualPointer(innerType: DragonType) extends
     DragonType(s"${innerType.llvm}*", bytes=innerType.bytes)
