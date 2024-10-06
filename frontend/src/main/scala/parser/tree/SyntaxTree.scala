@@ -2,7 +2,7 @@ package me.gabriel.seren.frontend
 package parser.tree
 
 import parser.Type
-import struct.{BinaryOp, Token}
+import struct.{BinaryOp, FunctionModifier, Token}
 
 case class SyntaxTree(root: RootNode) {
   def prettyPrint: String = {
@@ -76,11 +76,12 @@ case class StringLiteralNode(token: Token) extends TypedSyntaxTreeNode {
 }
 
 case class FunctionDeclarationNode(
-                                  token: Token,
-                                  name: String,
-                                  returnType: Type,
-                                  parameters: List[FunctionParameterNode],
-                                  block: BlockNode
+                                    token: Token,
+                                    name: String,
+                                    returnType: Type,
+                                    parameters: List[FunctionParameterNode],
+                                    modifiers: Set[FunctionModifier],
+                                    block: BlockNode
                                   ) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = parameters :+ block
 

@@ -2,7 +2,6 @@ package me.gabriel.tianlong
 package struct
 
 sealed class Dependency {
-
 }
 
 case object Dependency {
@@ -11,6 +10,13 @@ case object Dependency {
                        value: ValueReference
                      ) extends Dependency, ValueReference {
     override val dragonType: DragonType = value.dragonType
-    override def llvm: String = s"@${name}"
+    override def llvm: String = s"@$name"
+  }
+
+  case class Function(
+                       name: String,
+                       returnType: DragonType,
+                       parameters: List[DragonType]
+                     ) extends Dependency {
   }
 }

@@ -6,3 +6,9 @@ fn main() : int32 {
 fn test() : int32 {
     ret 5
 }
+
+fn print_line(a: int32) : void {
+    printf(a)
+}
+
+external<C> fn printf(a: int32) : void {}

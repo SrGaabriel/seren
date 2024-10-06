@@ -4,17 +4,23 @@ package session
 import `type`.dragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReferenceNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.struct.FunctionModifier
+import me.gabriel.seren.frontend.struct.FunctionModifier.External
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.{AddStatement, AssignStatement, CallStatement, DragonStatement, GetElementPointerStatement, TypedDragonStatement}
-import me.gabriel.tianlong.struct.{ConstantReference, ValueReference}
+import me.gabriel.tianlong.struct.Dependency.Constant
+import me.gabriel.tianlong.struct.{ConstantReference, Dependency, MemoryReference, ValueReference}
+
+import scala.collection.mutable
 
 class TianlongCompilerSession(
                              val syntaxTree: SyntaxTree,
                              val typeEnvironment: TypeEnvironment
                              ) {
   val module = TianlongModule()
+  val memoryReferences: mutable.Map[SymbolBlock, mutable.HashMap[String, MemoryReference]] = mutable.HashMap()
 
   def finish(): TianlongModule = module
 
@@ -26,17 +32,32 @@ class TianlongCompilerSession(
     node match {
       case declaration: FunctionDeclarationNode =>
         generateFunctionDeclaration(declaration)
-      case _ => None
+      case _ =>
     }
   }
 
   def generateFunctionDeclaration(node: FunctionDeclarationNode): Unit = {
+    node.modifiers.collectFirst {
+      case FunctionModifier.External(externalModule) =>
+        module.dependencies += Dependency.Function(
+          name = node.name,
+          returnType = node.returnType.dragon,
+          parameters = node.parameters.map(_.nodeType.dragon),
+        )
+        return
+    }
+
     val block = typeEnvironment.root.surfaceSearchChild(node).get
+
     val factory = module.createFunction(
       name = node.name,
       parameters = node.parameters.map(_.nodeType.dragon),
       returnType = node.returnType.dragon
     )
+    // TODO: remove index-based approach
+    factory.function.parameters.zipWithIndex.foreach { case (param, index) =>
+      insertMemory(block, node.parameters(index).name, param)
+    }
 
     node.block.children.foreach { child =>
       generateFunctionInstruction(block, node, factory, child) match {
@@ -58,7 +79,24 @@ class TianlongCompilerSession(
       case number: NumericNode => generateNumber(factory, number)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case string: StringLiteralNode => generateString(factory, string)
-      case _ => None
+      case _ =>
+        println(s"Unknown node: $node")
+        None
+    }
+  }
+
+  def generateValue(
+                      block: SymbolBlock,
+                      function: FunctionDeclarationNode,
+                      factory: FunctionFactory,
+                      node: SyntaxTreeNode
+                   ): Option[ValueReference] = {
+    node match {
+      case reference: ReferenceNode => generateReference(block, function, factory, reference)
+      case _ => generateFunctionInstruction(block, function, factory, node) match {
+        case Some(statement: TypedDragonStatement) => Some(statement)
+        case _ => None
+      }
     }
   }
   
@@ -77,8 +115,24 @@ class TianlongCompilerSession(
     value match {
       case Some(statement: TypedDragonStatement) =>
         val memory = factory.nextMemoryReference(node.nodeType.dragon)
+        insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))
       case _ => None
+    }
+  }
+
+  def generateReference(
+                        block: SymbolBlock,
+                        function: FunctionDeclarationNode,
+                        factory: FunctionFactory,
+                        node: ReferenceNode
+                       ): Option[MemoryReference] = {
+    memoryReferences.get(block) match {
+      case Some(references) => references.get(node.name) match {
+        case Some(reference) => Some(reference)
+        case None => None
+      }
+      case None => None
     }
   }
 
@@ -89,12 +143,12 @@ class TianlongCompilerSession(
                     node: FunctionCallNode
                   ): Option[CallStatement] = {
     val arguments = node.arguments.map { argument =>
-      generateFunctionInstruction(
+      generateValue(
         block = block,
         function = function,
         factory = factory,
         node = argument
-      ).get.asInstanceOf[TypedDragonStatement]
+      ).get
     }
 
     val call = factory.call(
@@ -148,5 +202,12 @@ class TianlongCompilerSession(
     )
     
     Some(format)
+  }
+
+  private def insertMemory(block: SymbolBlock, name: String, memory: MemoryReference): Unit = {
+    memoryReferences.get(block) match {
+      case Some(references) => references(name) = memory
+      case None => memoryReferences(block) = mutable.HashMap(name -> memory)
+    }
   }
 }

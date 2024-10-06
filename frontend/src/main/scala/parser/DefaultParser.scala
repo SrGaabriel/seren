@@ -4,7 +4,7 @@ package parser
 import error.ParsingError.*
 import error.ParsingError
 import parser.tree.*
-import struct.{BinaryOp, Token, TokenKind, TokenStream}
+import struct.{BinaryOp, FunctionModifier, Token, TokenKind, TokenStream}
 
 class DefaultParser extends Parser {
     def parse(stream: TokenStream): Either[ParsingError, SyntaxTree] = {
@@ -19,12 +19,24 @@ class DefaultParser extends Parser {
     private def parseTopLevelDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
-            case TokenKind.Function => parseFunctionDeclaration(stream)
+            // todo: improve this
+            case TokenKind.External =>
+                for {
+                    externalToken <- consumeToken(stream, TokenKind.External)
+                    leftAngleBracket <- consumeToken(stream, TokenKind.LeftAngleBracket)
+                    nameToken <- consumeToken(stream, TokenKind.Identifier)
+                    _ <- consumeToken(stream, TokenKind.RightAngleBracket)
+                    declaration <- parseFunctionDeclaration(stream, Set(FunctionModifier.External(nameToken.value)))
+                } yield declaration
+            case TokenKind.Function => parseFunctionDeclaration(stream, Set.empty)
             case _ => Left(UnexpectedTokenError(peek))
         }
     }
 
-    private def parseFunctionDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    private def parseFunctionDeclaration(
+                                          stream: TokenStream,
+                                          modifiers: Set[FunctionModifier]
+                                        ): Either[ParsingError, SyntaxTreeNode] = {
         for {
             fnToken <- consumeToken(stream, TokenKind.Function)
             nameToken <- consumeToken(stream, TokenKind.Identifier)
@@ -35,11 +47,15 @@ class DefaultParser extends Parser {
                 case Left(_) => Right(Type.Void)
             }
             body <- parseBlock(stream)
-        } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, body)
+        } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, modifiers, body)
     }
 
     private def parseFunctionParameter(stream: TokenStream): Either[ParsingError, FunctionParameterNode] = {
-        throw new NotImplementedError("Function parameters are not implemented yet")
+        for {
+            nameToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.TypeDeclaration)
+            parameterType <- parseType(stream)
+        } yield FunctionParameterNode(nameToken, nameToken.value, parameterType)
     }
 
     private def parseExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {

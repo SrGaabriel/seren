@@ -29,6 +29,8 @@ class DefaultLexer extends Lexer {
         case '^' => addToken("^", TokenKind.Exponentiation)
         case '{' => addToken("{", TokenKind.LeftBrace)
         case '}' => addToken("}", TokenKind.RightBrace)
+        case '<' => addToken("<", TokenKind.LeftAngleBracket)
+        case '>' => addToken(">", TokenKind.RightAngleBracket)
 //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
           if (input(position + 1) == '=') {
@@ -53,6 +55,7 @@ class DefaultLexer extends Lexer {
             case "void" => TokenKind.VoidType
             case "int32" => TokenKind.Int32Type
             case "string" => TokenKind.StringLiteral
+            case "external" => TokenKind.External
             case _ => TokenKind.Identifier
           }
           addToken(identifier, tokenKind)
@@ -109,7 +112,9 @@ class DefaultLexer extends Lexer {
       TokenKind.Let,
       TokenKind.Function,
       TokenKind.Return,
-      TokenKind.BOF // Add BOF to remove leading newlines
+      TokenKind.BOF,
+      TokenKind.RightParenthesis,
+      TokenKind.RightBrace,
     )
 
     val followingExclusions: Set[TokenKind] = Set(

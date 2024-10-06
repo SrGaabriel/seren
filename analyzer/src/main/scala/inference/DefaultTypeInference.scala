@@ -16,14 +16,13 @@ class DefaultTypeInference extends TypeInference {
                                  node: SyntaxTreeNode
                                ): Unit = {
     val actualBlock = node match {
-      case function: FunctionDeclarationNode => {
+      case function: FunctionDeclarationNode =>
         module.addLocalFunction(
           name = function.name,
           params = function.parameters.map(p => p.nodeType),
           returnType = function.returnType
         )
         block.createChild(function)
-      }
       case _ => block
     }
 
@@ -53,6 +52,9 @@ class DefaultTypeInference extends TypeInference {
         block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
+      case FunctionParameterNode(_, name, nodeType) =>
+        block.lazyDefine(node, TypeLiteral(nodeType))
+        block.lazyRegisterSymbol(name, TypeLiteral(nodeType))
       case assignmentNode: AssignmentNode =>
         val bodyType = processTypedNode(block, assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
@@ -61,12 +63,11 @@ class DefaultTypeInference extends TypeInference {
         block.lazyDefine(callNode, TypeCall(callNode.name, callNode.arguments.map(
           argument => processTypedNode(block,argument)
         )))
-      case _ => {
+      case _ =>
         if (node.nodeType == Type.Unknown) {
           println(s"Warning: registering unknown typed node $node")
         }
         block.lazyDefine(node, TypeLiteral(node.nodeType))
-      }
     }
   }
 

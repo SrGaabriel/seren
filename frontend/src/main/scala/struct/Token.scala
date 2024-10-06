@@ -21,6 +21,7 @@ enum TokenKind:
   case Exponentiation
   case LeftBrace
   case Assign
+  case External
   case TypeDeclaration
   case VoidType
   case StringType
@@ -37,4 +38,6 @@ enum TokenKind:
   case RightBrace
   case LeftParenthesis
   case RightParenthesis
+  case LeftAngleBracket
+  case RightAngleBracket
   case EOF
