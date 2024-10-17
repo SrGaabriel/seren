@@ -23,7 +23,7 @@ case class CallStatement(
   override def valid: Boolean = true
 
   override def statementLlvm: String = {
-    val args = arguments.map(_.dragonType.llvm).zip(arguments.map(_.flattenValue)).map((dragonType, llvm) => s"$dragonType $llvm").mkString(", ")
+    val args = arguments.map(_.dragonType.llvm).zip(arguments.map(_.llvm)).map((dragonType, llvm) => s"$dragonType $llvm").mkString(", ")
     s"call ${statementType.llvm} $name($args)"
   }
 }

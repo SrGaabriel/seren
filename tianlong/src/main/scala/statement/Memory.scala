@@ -11,7 +11,7 @@ case class AssignStatement(
 
   override def valid: Boolean = true
 
-  override def statementLlvm: String = s"%${memory.register} = ${value.llvm}"
+  override def statementLlvm: String = s"%${memory.register} = ${value.statementLlvm}"
 }
 
 case class StoreStatement(
@@ -32,7 +32,7 @@ case class BulkStoreStatement(
   override val memoryDependencies: List[ValueReference] = values.concat(List(pointer))
   override def valid: Boolean = pointer.dragonType.isPointer
 
-  def onlyType = values.map(_.dragonType).distinct.head
+  private def onlyType = values.map(_.dragonType).distinct.head
 
   override def statementLlvm: String = {
     val valueLlvm = values.map(value => s"${value.dragonType.llvm} ${value.llvm}").mkString(", ")
@@ -72,8 +72,8 @@ case class GetElementPointerStatement(
   private def pointerType = DragonType.ContextualPointer(originalType)
 
   override def statementLlvm: String =
-    s"getelementptr " +
-      s"${if (inBounds) "inbounds" else ""}" +
+    s"getelementptr" +
+      s"${if (inBounds) " inbounds" else ""}" +
       s" ${originalType.llvm}, ${pointerType.llvm} ${struct.llvm}" +
       s"${if (total) ", i32 0" else ""}${elementType.llvm} ${index.llvm}" +
       s", ${index.dragonType.llvm} ${index.llvm}"
