@@ -54,6 +54,7 @@ class DefaultLexer extends Lexer {
             case "ret" => TokenKind.Return
             case "void" => TokenKind.VoidType
             case "int32" => TokenKind.Int32Type
+            case "struct" => TokenKind.Struct
             case "string" => TokenKind.StringLiteral
             case "external" => TokenKind.External
             case _ => TokenKind.Identifier

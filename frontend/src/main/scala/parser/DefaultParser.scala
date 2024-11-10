@@ -29,8 +29,26 @@ class DefaultParser extends Parser {
                     declaration <- parseFunctionDeclaration(stream, Set(FunctionModifier.External(nameToken.value)))
                 } yield declaration
             case TokenKind.Function => parseFunctionDeclaration(stream, Set.empty)
+            case TokenKind.Struct => parseStructDeclaration(stream)
             case _ => Left(UnexpectedTokenError(peek))
         }
+    }
+
+    private def parseStructDeclaration(stream: TokenStream): Either[ParsingError, StructDeclarationNode] = {
+        for {
+            structToken <- consumeToken(stream, TokenKind.Struct)
+            nameToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.LeftBrace)
+            fields <- parseSequence(stream, TokenKind.NewLine, TokenKind.RightBrace, parseStructField)
+        } yield StructDeclarationNode(structToken, nameToken.value, fields)
+    }
+
+    private def parseStructField(stream: TokenStream): Either[ParsingError, StructFieldNode] = {
+        for {
+            nameToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.TypeDeclaration)
+            fieldType <- parseType(stream)
+        } yield StructFieldNode(nameToken, nameToken.value, fieldType)
     }
 
     private def parseFunctionDeclaration(

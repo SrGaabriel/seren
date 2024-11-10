@@ -19,4 +19,11 @@ case object Dependency {
                        parameters: List[DragonType]
                      ) extends Dependency {
   }
+  
+  case class Struct(
+                      name: String,
+                      fields: List[DragonType]
+                   ) extends Dependency {
+    
+  }
 }

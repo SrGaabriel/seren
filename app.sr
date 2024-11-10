@@ -1,3 +1,8 @@
+struct Vector {
+    x: int32
+    y: int32
+}
+
 fn main() : int32 {
     a := "Hello, World!"
     print_line(test())

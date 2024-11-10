@@ -13,6 +13,7 @@ enum TokenKind:
   case Let
   case SemiColon
   case Function
+  case Struct
   case Identifier
   case Return
   case Multiply

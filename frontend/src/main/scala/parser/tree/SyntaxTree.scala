@@ -123,3 +123,23 @@ class ReferenceNode(val token: Token, val name: String, var nodeType: Type) exte
 
   override def toString: String = s"ReferenceNode($name)"
 }
+
+class StructDeclarationNode(
+                              val token: Token,
+                              val name: String,
+                              val fields: List[StructFieldNode]
+                           ) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = fields
+  
+  override def toString: String = s"StructDeclarationNode($name, $fields)"
+}
+
+class StructFieldNode(
+                       val token: Token,
+                       val name: String,
+                       var nodeType: Type
+                     ) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"StructFieldNode($name)"
+}

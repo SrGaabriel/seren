@@ -4,7 +4,7 @@ package session
 import `type`.dragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReferenceNode, ReturnNode, StringLiteralNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReferenceNode, ReturnNode, StringLiteralNode, StructDeclarationNode, SyntaxTree, SyntaxTreeNode}
 import me.gabriel.seren.frontend.struct.FunctionModifier
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
 import me.gabriel.tianlong.TianlongModule
@@ -32,8 +32,14 @@ class TianlongCompilerSession(
     node match {
       case declaration: FunctionDeclarationNode =>
         generateFunctionDeclaration(declaration)
+      case declaration: StructDeclarationNode =>
+        generateStructDeclaration(declaration)
       case _ =>
     }
+  }
+  
+  def generateStructDeclaration(node: StructDeclarationNode): Unit = {
+    module.createStruct(node.name, node.fields.map(_.nodeType.dragon))
   }
 
   def generateFunctionDeclaration(node: FunctionDeclarationNode): Unit = {

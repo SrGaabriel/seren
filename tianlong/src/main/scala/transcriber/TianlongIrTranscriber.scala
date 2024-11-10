@@ -21,6 +21,8 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
         s"@$name = unnamed_addr constant ${value.dragonType.llvm} ${value.llvm}"
       case Dependency.Function(name, returnType, parameters) =>
         s"declare ${returnType.llvm} @$name(${parameters.map(_.llvm).mkString(", ")})"
+      case Dependency.Struct(name, fields) =>
+        s"%$name = type { ${fields.map(_.llvm).mkString(", ")} }"
     }
   }
 

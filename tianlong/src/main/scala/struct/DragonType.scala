@@ -30,6 +30,14 @@ object DragonType {
     bytes = innerType.bytes * size
   )
 
+  case class Struct(
+                      name: String,
+                      fields: List[DragonType]
+                    ) extends DragonType(
+                      llvm = s"%$name",
+                      bytes = fields.map(_.bytes).sum
+                   )
+
   case object StaticPointer extends DragonType("ptr", bytes = 1)
 }
 

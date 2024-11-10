@@ -32,4 +32,13 @@ class TianlongModule extends DragonModule {
         newConstant
     }
   }
+  
+  def createStruct(
+              name: String,
+              types: List[DragonType]
+            ): Dependency.Struct = {
+    val struct = Dependency.Struct(name, types)
+    dependencies += struct
+    struct
+  }
 }
