@@ -5,17 +5,29 @@ import function.DragonFunction
 import statement.*
 import struct.DragonType.Int8
 import struct.{ConstantReference, DragonType, MemoryReference, ValueReference}
+import scala.collection.mutable
 
 class FunctionFactory(
                       val module: TianlongModule,
                       val function: DragonFunction
                      ) {
+  val escapees: mutable.Set[MemoryReference] = mutable.Set.empty
+  val assignments = mutable.Map.empty[MemoryReference, AssignStatement]
   var currentRegister: Int = math.max(function.parameters.size, 1)
 
   def statement(statement: DragonStatement): FunctionFactory = {
     if (!statement.valid) {
       throw new IllegalArgumentException(s"Invalid statement: $statement")
     }
+    statement match {
+      case call: CallStatement =>
+        call.arguments.foreach {
+          case reference: MemoryReference =>
+            escapees += reference
+          case _ =>
+        }
+    }
+
     currentRegister += 1
     function.statements += statement
     this
@@ -62,6 +74,7 @@ class FunctionFactory(
   def assign(typedStatement: TypedDragonStatement, constantOverride: Option[Boolean] = None): MemoryReference = {
     val memoryReference = nextMemoryReference(typedStatement.statementType)
     val assignment = assignStatement(memoryReference, typedStatement, constantOverride)
+    assignments(memoryReference) = assignment
     statement(assignment)
     memoryReference
   }
