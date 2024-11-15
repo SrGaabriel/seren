@@ -86,7 +86,6 @@ class TianlongCompilerSession(
     node match {
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
-      case number: NumericNode => generateNumber(factory, number)
       case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case string: StringLiteralNode => generateString(factory, string)
@@ -103,6 +102,7 @@ class TianlongCompilerSession(
                       node: SyntaxTreeNode
                    ): Option[ValueReference] = {
     node match {
+      case number: NumericNode => generateNumber(factory, number)
       case reference: ReferenceNode => generateReference(block, function, factory, reference)
       case _ => generateFunctionInstruction(block, function, factory, node) match {
         case Some(statement: TypedDragonStatement) => Some(factory.assign(statement))
@@ -191,17 +191,8 @@ class TianlongCompilerSession(
   def generateNumber(
                       factory: FunctionFactory,
                       node: NumericNode,
-                    ): Option[BinaryOpStatement] = {
-    Some(factory.add(
-      ConstantReference.Number(
-        number = node.token.value,
-        dragonType = node.nodeType.dragon
-      ),
-      ConstantReference.Number(
-        number = "0",
-        dragonType = node.nodeType.dragon
-      )
-    ))
+                    ): Option[ValueReference] = {
+    Some(ConstantReference.Number(node.token.value, node.nodeType.dragon))
   }
   
   def generateBinaryOp(
