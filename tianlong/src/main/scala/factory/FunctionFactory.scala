@@ -14,7 +14,7 @@ class FunctionFactory(
                      ) {
   val escapees: mutable.Set[MemoryReference] = mutable.Set.empty
   val assignments = mutable.Map.empty[MemoryReference, AssignStatement]
-  var currentRegister: Int = math.max(function.parameters.size, 1)
+  var currentRegister: Int = function.parameters.size + 1
 
   def statement(statement: DragonStatement): FunctionFactory = {
     if (!statement.valid) {

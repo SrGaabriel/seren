@@ -11,7 +11,7 @@ case class AssignStatement(
 
   override def valid: Boolean = true
 
-  override def statementLlvm: String = s"%${memory.register} = ${value.statementLlvm}"
+  override def statementLlvm: String = s"${memory.llvm} = ${value.statementLlvm}"
 }
 
 case class StoreStatement(

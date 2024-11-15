@@ -15,7 +15,7 @@ case class MemoryReference(
                  register: Int,
                  dragonType: DragonType
                  ) extends ValueReference {
-  override def llvm: String = "%" + register
+  override def llvm: String = "%reg_" + register
 }
 
 sealed abstract class ConstantReference(

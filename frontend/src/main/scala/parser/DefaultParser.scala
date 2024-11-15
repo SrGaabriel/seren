@@ -68,14 +68,23 @@ class DefaultParser extends Parser {
                 case Right(_) => parseType(stream, isC = isC)
                 case Left(_) => Right(Type.Void)
             }
-            body <- parseBlock(stream)
+            body <- if isC then
+                Right(BlockNode(fnToken, List.empty))
+            else
+                parseBlock(stream)
         } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, modifiers, body)
     }
 
     private def parseFunctionParameter(stream: TokenStream, isC: Boolean=false): Either[ParsingError, FunctionParameterNode] = {
         for {
-            nameToken <- consumeToken(stream, TokenKind.Identifier)
-            _ <- consumeToken(stream, TokenKind.TypeDeclaration)
+            nameToken <- if isC then
+                Right(Token("", TokenKind.Identifier))
+            else
+                consumeToken(stream, TokenKind.Identifier)
+            _ <- if isC then
+                Right(())
+            else
+                consumeToken(stream, TokenKind.TypeDeclaration)
             parameterType <- parseType(stream, isC=isC)
         } yield FunctionParameterNode(nameToken, nameToken.value, parameterType)
     }

@@ -1,7 +1,7 @@
 package me.gabriel.seren.llvm
 package session
 
-import `type`.dragon
+import `type`.referenceDragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
@@ -40,7 +40,7 @@ class TianlongCompilerSession(
   }
   
   def generateStructDeclaration(node: StructDeclarationNode): Unit = {
-    module.createStruct(node.name, node.fields.map(_.nodeType.dragon))
+    module.createStruct(node.name, node.fields.map(_.nodeType.referenceDragon))
   }
 
   def generateFunctionDeclaration(node: FunctionDeclarationNode): Unit = {
@@ -48,8 +48,8 @@ class TianlongCompilerSession(
       case FunctionModifier.External(externalModule) =>
         module.dependencies += Dependency.Function(
           name = node.name,
-          returnType = node.returnType.dragon,
-          parameters = node.parameters.map(_.nodeType.dragon),
+          returnType = node.returnType.referenceDragon,
+          parameters = node.parameters.map(_.nodeType.referenceDragon),
         )
         return
     }
@@ -58,8 +58,8 @@ class TianlongCompilerSession(
 
     val factory = module.createFunction(
       name = node.name,
-      parameters = node.parameters.map(_.nodeType.dragon),
-      returnType = node.returnType.dragon
+      parameters = node.parameters.map(_.nodeType.referenceDragon),
+      returnType = node.returnType.referenceDragon
     )
     // TODO: remove index-based approach
     factory.function.parameters.zipWithIndex.foreach { case (param, index) =>
@@ -126,7 +126,7 @@ class TianlongCompilerSession(
     )
     value match {
       case Some(statement: TypedDragonStatement) =>
-        val memory = factory.nextMemoryReference(node.nodeType.dragon)
+        val memory = factory.nextMemoryReference(node.nodeType.referenceDragon)
         insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))
       case Some(number: NumericNode) =>
@@ -166,7 +166,7 @@ class TianlongCompilerSession(
       ).get
     }
 
-    val returnType = node.nodeType.dragon
+    val returnType = node.nodeType.referenceDragon
     val call = factory.call(
       name = node.name,
       returnType = returnType,
@@ -196,7 +196,7 @@ class TianlongCompilerSession(
                       factory: FunctionFactory,
                       node: NumericNode,
                     ): Option[ValueReference] = {
-    Some(ConstantReference.Number(node.token.value, node.nodeType.dragon))
+    Some(ConstantReference.Number(node.token.value, node.nodeType.referenceDragon))
   }
   
   def generateNumber(
@@ -206,11 +206,11 @@ class TianlongCompilerSession(
     Some(factory.add(
       ConstantReference.Number(
         number = node.token.value,
-        dragonType = node.nodeType.dragon
+        dragonType = node.nodeType.referenceDragon
       ),
       ConstantReference.Number(
         number = "0",
-        dragonType = node.nodeType.dragon
+        dragonType = node.nodeType.referenceDragon
       )
     ))
   }

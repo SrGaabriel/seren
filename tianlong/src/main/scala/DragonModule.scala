@@ -17,7 +17,7 @@ trait DragonModule {
                  ): DragonFunction = {
     val function = new DragonFunction(this, name, parameters.zipWithIndex.map((param, index) =>
       MemoryReference(
-        register = index,
+        register = index+1,
         dragonType = param
       )
     ), returnType)
