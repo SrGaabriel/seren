@@ -6,6 +6,7 @@ import `type`.dragon
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
+import me.gabriel.seren.frontend.struct.BinaryOp
 import me.gabriel.seren.frontend.struct.FunctionModifier
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
 import me.gabriel.tianlong.TianlongModule
@@ -86,6 +87,7 @@ class TianlongCompilerSession(
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case number: NumericNode => generateNumber(factory, number)
+      case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case string: StringLiteralNode => generateString(factory, string)
       case _ =>
@@ -189,7 +191,7 @@ class TianlongCompilerSession(
   def generateNumber(
                       factory: FunctionFactory,
                       node: NumericNode,
-                    ): Option[AddStatement] = {
+                    ): Option[BinaryOpStatement] = {
     Some(factory.add(
       ConstantReference.Number(
         number = node.token.value,
@@ -200,6 +202,32 @@ class TianlongCompilerSession(
         dragonType = node.nodeType.dragon
       )
     ))
+  }
+  
+  def generateBinaryOp(
+                        factory: FunctionFactory,
+                        node: BinaryOperationNode
+                      ): Option[BinaryOpStatement] = {
+    val left = generateValue(
+      block = null,
+      function = null,
+      factory = factory,
+      node = node.left
+    ).get
+    val right = generateValue(
+      block = null,
+      function = null,
+      factory = factory,
+      node = node.right
+    ).get
+    val op = node.op match {
+      case BinaryOp.Plus => BinaryOpType.Add
+      case BinaryOp.Minus => BinaryOpType.Sub
+      case BinaryOp.Multiply => BinaryOpType.Mul
+      case BinaryOp.Divide => BinaryOpType.Div
+    }
+    
+    Some(factory.binaryOp(left, right, op))
   }
   
   def generateString(

@@ -4,7 +4,8 @@ package factory
 import function.DragonFunction
 import statement.*
 import struct.DragonType.Int8
-import struct.{ConstantReference, DragonType, MemoryReference, ValueReference}
+import struct.{BinaryOpType, ConstantReference, DragonType, MemoryReference, ValueReference}
+
 import scala.collection.mutable
 
 class FunctionFactory(
@@ -42,8 +43,12 @@ class FunctionFactory(
     AllocateStatement(allocationType, alignment)
   }
   
-  def add(left: ValueReference, right: ValueReference): AddStatement = {
-    AddStatement(left, right)
+  def add(left: ValueReference, right: ValueReference): BinaryOpStatement = {
+    binaryOp(left, right, BinaryOpType.Add)
+  }
+  
+  def binaryOp(left: ValueReference, right: ValueReference, op: BinaryOpType): BinaryOpStatement = {
+    BinaryOpStatement(left, right, op)
   }
 
   def call(

@@ -263,10 +263,9 @@ class DefaultParser extends Parser {
         val token = stream.next
         if (isC) {
             stream.peek.kind match {
-                case TokenKind.Multiply => {
+                case TokenKind.Multiply =>
                     stream.next
                     return Right(Type.CType(token.value + "*"))
-                }
                 case _ => return Right(Type.CType(token.value))
             }
         }

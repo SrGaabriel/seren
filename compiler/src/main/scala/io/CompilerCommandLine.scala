@@ -41,12 +41,12 @@ class CompilerCommandConfig(
   val llvmOnly: Boolean,
   val keepAll: Boolean
 ) {
-  def inputFile = input.split('.').head match {
+  def inputFile: String = input.split('.').head match {
     case name if name.endsWith(".sr") => name
     case other => other + ".sr"
   }
   
-  def inputName = input.split('.') match {
+  def inputName: Option[String] = input.split('.') match {
     case Array(name, "sr") => Some(name)
     case _ => None
   }
