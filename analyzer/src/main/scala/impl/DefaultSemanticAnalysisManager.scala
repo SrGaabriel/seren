@@ -22,6 +22,7 @@ class DefaultSemanticAnalysisManager(moduleManager: ModuleManager) extends Seman
     val newBlock = node match {
       case node: AssignmentNode => analyzeNode(block, node, currentResult)
       case node: FunctionDeclarationNode => analyzeNode(block, node, currentResult)
+      case node: FunctionCallNode => analyzeNode(block, node, currentResult)
       case _ => block
     }
 

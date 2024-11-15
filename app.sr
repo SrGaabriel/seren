@@ -3,19 +3,15 @@ struct Vector {
     y: int32
 }
 
-fn main() : int32 {
-    print_line("Hello, World!")
-    print_line("What's up?")
+def main() : int32 {
+    printf("Hello, World!")
+    printf("What's up? %d", test())
+    printf("Hello, World!")
     ret 0
 }
 
-fn test() : int32 {
+def test() : int32 {
     ret 6
 }
 
-fn print_line(text: string) {
-    printf("%s
-", text)
-}
-
-external<C> fn printf(i8*, ...)
+external<C> def printf(i8*, ...)

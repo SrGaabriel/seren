@@ -19,6 +19,7 @@ class DefaultParser extends Parser {
     private def parseTopLevelDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
+            case TokenKind.NewLine => consumeToken(stream, TokenKind.NewLine); parseTopLevelDeclaration(stream)
             // todo: improve this
             case TokenKind.External =>
                 for {

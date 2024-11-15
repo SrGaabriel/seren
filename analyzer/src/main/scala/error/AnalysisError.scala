@@ -15,4 +15,11 @@ object AnalysisError {
                                   ) extends  AnalysisError {
     def message = s"The feature $feature has not been implemented yet"
   }
+  
+  case class FunctionNotDefined(
+                                name: String,
+                                node: SyntaxTreeNode
+                                ) extends AnalysisError {
+    def message = s"Function $name is not defined"
+  }
 }

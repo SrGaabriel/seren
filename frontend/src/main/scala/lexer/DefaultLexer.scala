@@ -52,7 +52,7 @@ class DefaultLexer extends Lexer {
           val identifier = input.drop(position).takeWhile(c => c.isLetterOrDigit || c == '_')
           val tokenKind = identifier match {
             case "let" => TokenKind.Let
-            case "fn" => TokenKind.Function
+            case "def" => TokenKind.Function
             case "ret" => TokenKind.Return
             case "any" => TokenKind.AnyType
             case "void" => TokenKind.VoidType
