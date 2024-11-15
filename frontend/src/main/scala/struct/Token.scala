@@ -17,6 +17,7 @@ enum TokenKind:
   case Identifier
   case Return
   case Multiply
+  case Vararg
   case Divide
   case Comma
   case Exponentiation
@@ -24,6 +25,7 @@ enum TokenKind:
   case Assign
   case External
   case TypeDeclaration
+  case AnyType
   case VoidType
   case StringType
   case Int8Type

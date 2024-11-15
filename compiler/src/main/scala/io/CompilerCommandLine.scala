@@ -6,11 +6,13 @@ class CompilerCommandLine(args: List[String]) {
     val input = readIndependentArgument()
     val output = readOption("output")
     val llvmOnly = readFlag("llvm-only")
-    
+    val keepAll = readFlag("keep")
+
     new CompilerCommandConfig(
       input = input,
       output = output,
-      llvmOnly = llvmOnly
+      llvmOnly = llvmOnly,
+      keepAll = keepAll
     )
   }
   
@@ -36,7 +38,8 @@ class CompilerCommandLine(args: List[String]) {
 class CompilerCommandConfig(
   val input: String,
   val output: Option[String],
-  val llvmOnly: Boolean
+  val llvmOnly: Boolean,
+  val keepAll: Boolean
 ) {
   def inputFile = input.split('.').head match {
     case name if name.endsWith(".sr") => name

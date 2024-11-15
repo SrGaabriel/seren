@@ -2,11 +2,12 @@ package me.gabriel.seren.analyzer
 package impl
 
 import error.AnalysisResult
+import external.ModuleManager
 import impl.node.*
 
 import me.gabriel.seren.frontend.parser.tree.*
 
-class DefaultSemanticAnalysisManager extends SemanticAnalysisManager {
+class DefaultSemanticAnalysisManager(moduleManager: ModuleManager) extends SemanticAnalysisManager {
   override def analyzeTree(typeEnvironment: TypeEnvironment, tree: SyntaxTree): AnalysisResult = {
     val results = new AnalysisResult()
     magicallyAnalyzeNode(
@@ -32,6 +33,6 @@ class DefaultSemanticAnalysisManager extends SemanticAnalysisManager {
                     node: T,
                     currentResult: AnalysisResult
                     )(implicit analyzer: SemanticAnalyzer[T]): SymbolBlock = {
-    analyzer.analyze(block, node, currentResult)
+    analyzer.analyze(moduleManager, block, node, currentResult)
   }
 }

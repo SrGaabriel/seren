@@ -13,4 +13,6 @@ class TokenStream(tokens: List[Token]):
     token
 
   def hasNext: Boolean = index < tokens.length
+
+  override def toString: String = tokens.drop(index).mkString(" ")
 end TokenStream

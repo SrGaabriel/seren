@@ -9,6 +9,8 @@ extension (serenType: Type) {
     case Type.Int => DragonType.Int32
     case Type.Void => DragonType.Void
     case Type.String => DragonType.ContextualPointer(DragonType.Int8)
+    case Type.CType(name) => DragonType.Custom(name)
+    case Type.Vararg(_) => DragonType.Vararg(None)
     case _ => throw new Exception(s"Unsupported LLVM type $serenType")
   }
 }

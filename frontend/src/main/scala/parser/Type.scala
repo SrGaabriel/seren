@@ -13,4 +13,6 @@ enum Type:
   case Char
   case String
   case Void
+  case CType(name: String)
+  case Vararg(base: Type)
   case Unknown

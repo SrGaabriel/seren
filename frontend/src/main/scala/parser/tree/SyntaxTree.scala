@@ -97,7 +97,7 @@ case class FunctionParameterNode(token: Token, name: String, var nodeType: Type)
 class FunctionCallNode(
                             val token: Token,
                             val name: String,
-                            val arguments: List[TypedSyntaxTreeNode]
+                            var arguments: List[TypedSyntaxTreeNode]
                             ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
   var nodeType: Type = Type.Unknown

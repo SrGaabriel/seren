@@ -31,6 +31,7 @@ class DefaultLexer extends Lexer {
         case '}' => addToken("}", TokenKind.RightBrace)
         case '<' => addToken("<", TokenKind.LeftAngleBracket)
         case '>' => addToken(">", TokenKind.RightAngleBracket)
+        case ',' => addToken(",", TokenKind.Comma)
 //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
           if (input(position + 1) == '=') {
@@ -38,6 +39,8 @@ class DefaultLexer extends Lexer {
           } else {
             addToken(":", TokenKind.TypeDeclaration)
           }
+        case '.' if input.drop(position).startsWith("...") =>
+          addToken("...", TokenKind.Vararg)
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
@@ -52,6 +55,7 @@ class DefaultLexer extends Lexer {
             case "let" => TokenKind.Let
             case "fn" => TokenKind.Function
             case "ret" => TokenKind.Return
+            case "any" => TokenKind.AnyType
             case "void" => TokenKind.VoidType
             case "int32" => TokenKind.Int32Type
             case "struct" => TokenKind.Struct

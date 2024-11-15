@@ -55,24 +55,28 @@ class DefaultParser extends Parser {
                                           stream: TokenStream,
                                           modifiers: Set[FunctionModifier]
                                         ): Either[ParsingError, SyntaxTreeNode] = {
+        val isC = modifiers.exists {
+            case FunctionModifier.External(name) => name == "C"
+            case _ => false
+        }
         for {
             fnToken <- consumeToken(stream, TokenKind.Function)
             nameToken <- consumeToken(stream, TokenKind.Identifier)
             _ <- consumeToken(stream, TokenKind.LeftParenthesis)
-            parameters <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseFunctionParameter)
+            parameters <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, s => parseFunctionParameter(s, isC=isC))
             returnType <- consumeToken(stream, TokenKind.TypeDeclaration) match {
-                case Right(_) => parseType(stream)
+                case Right(_) => parseType(stream, isC = isC)
                 case Left(_) => Right(Type.Void)
             }
             body <- parseBlock(stream)
         } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, modifiers, body)
     }
 
-    private def parseFunctionParameter(stream: TokenStream): Either[ParsingError, FunctionParameterNode] = {
+    private def parseFunctionParameter(stream: TokenStream, isC: Boolean=false): Either[ParsingError, FunctionParameterNode] = {
         for {
             nameToken <- consumeToken(stream, TokenKind.Identifier)
             _ <- consumeToken(stream, TokenKind.TypeDeclaration)
-            parameterType <- parseType(stream)
+            parameterType <- parseType(stream, isC=isC)
         } yield FunctionParameterNode(nameToken, nameToken.value, parameterType)
     }
 
@@ -172,7 +176,7 @@ class DefaultParser extends Parser {
 
     private def parseNumberLiteral(stream: TokenStream): Either[ParsingError, NumericNode] = {
         val token = stream.next
-        Right(NumericNode(token, Type.Unknown))
+        Right(NumericNode(token, Type.Int))
     }
 
     private def parseString(stream: TokenStream): Either[ParsingError, StringLiteralNode] = {
@@ -255,13 +259,29 @@ class DefaultParser extends Parser {
         }
     }
 
-    private def parseType(stream: TokenStream): Either[ParsingError, Type] = {
+    private def parseType(stream: TokenStream, isC: Boolean=false): Either[ParsingError, Type] = {
         val token = stream.next
-        token.kind match {
+        if (isC) {
+            stream.peek.kind match {
+                case TokenKind.Multiply => {
+                    stream.next
+                    return Right(Type.CType(token.value + "*"))
+                }
+                case _ => return Right(Type.CType(token.value))
+            }
+        }
+        val base = token.kind match {
             case TokenKind.VoidType => Right(Type.Void)
             case TokenKind.Int32Type => Right(Type.Int)
             case TokenKind.StringLiteral => Right(Type.String)
+            case TokenKind.AnyType => Right(Type.Any)
             case _ => Left(InvalidTypeDeclarationError(token))
+        }
+        if (stream.peek.kind == TokenKind.Vararg) {
+            stream.next
+            Right(Type.Vararg(base.toOption.get))
+        } else {
+            base
         }
     }
 

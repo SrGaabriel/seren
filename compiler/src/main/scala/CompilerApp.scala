@@ -51,7 +51,7 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   typeInference.traverseBottomUp(moduleManager, lazyTypeRoot, root)
   TypeSynthesizer.updateTreeTypes(moduleManager, lazyTypeRoot)
 
-  val analysisManager = DefaultSemanticAnalysisManager()
+  val analysisManager = DefaultSemanticAnalysisManager(moduleManager)
   val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
   if (analysisResult.errors.nonEmpty) {
     println(s"There have been ${analysisResult.errors.size} errors:")
@@ -66,6 +66,6 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   val llFile = io.writeFile(llFileName, llvmCode)
   if (!options.llvmOnly) {
     io.linkLlFileToExecutable(llFileName, llFileName.replace(".ll", ".exe"))
-    llFile.delete()
+    if (!options.keepAll) llFile.delete()
   }
 }

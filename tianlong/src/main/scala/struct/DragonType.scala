@@ -19,6 +19,9 @@ object DragonType {
   case object Float64 extends DragonType("f64", bytes = 8)
   case object Void extends DragonType("void", bytes = 0)
 
+  case class Vararg(base: Option[DragonType]) extends DragonType("...", bytes = -1)
+  case class Custom(name: String) extends DragonType(name, bytes = -1)
+
   case class ContextualPointer(innerType: DragonType) extends
     DragonType(s"${innerType.llvm}*", bytes=innerType.bytes)
 

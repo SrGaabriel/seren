@@ -4,8 +4,7 @@ struct Vector {
 }
 
 fn main() : int32 {
-    a := "Hello, World!"
-    printf(a)
+    printf("Sum: %d + %d = %d", 3, 3, 6)
     ret 0
 }
 
@@ -13,8 +12,4 @@ fn test() : int32 {
     ret 6
 }
 
-fn print_line(a: int32) : void {
-    printf(a)
-}
-
-external<C> fn printf(a: int32) : void {}
+external<C> fn printf(a: i8*, b: ...) : void {}
