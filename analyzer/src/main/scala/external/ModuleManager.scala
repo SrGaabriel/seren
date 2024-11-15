@@ -26,6 +26,19 @@ class ModuleManager(val directive: Directive) {
     )
   }
   
+  def addStruct(
+                 name: String,
+                 fields: List[Type]
+               ): Unit = {
+    importPackage(
+      Package.Struct(
+        name = name,
+        directive = directive,
+        fields = fields
+      )
+    )
+  }
+  
   def searchFunction(name: String): Option[Package.Function] = {
     packages.collectFirst {
       case function: Package.Function

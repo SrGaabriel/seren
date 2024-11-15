@@ -13,6 +13,8 @@ enum Type:
   case Char
   case String
   case Void
+  case Struct(name: String)
+  case UnknownThis
   case CType(name: String)
   case Vararg(base: Type)
   case Unknown

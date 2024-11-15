@@ -32,7 +32,7 @@ class TianlongCompilerSession(
   def generateTopLevelNode(node: SyntaxTreeNode): Unit = {
     node match {
       case declaration: FunctionDeclarationNode =>
-        generateFunctionDeclaration(declaration)
+        generateTopLevelFunction(declaration)
       case declaration: StructDeclarationNode =>
         generateStructDeclaration(declaration)
       case _ =>
@@ -41,9 +41,22 @@ class TianlongCompilerSession(
   
   def generateStructDeclaration(node: StructDeclarationNode): Unit = {
     module.createStruct(node.name, node.fields.map(_.nodeType.referenceDragon))
+    
+    val block = typeEnvironment.root.surfaceSearchChild(node).get
+    
+    for (function <- node.functions) {
+      generateFunctionDeclaration(
+        block = block,
+        node = function,
+        name = s"${node.name}_${function.name}",
+        parameters = function.parameters,
+        returnType = function.returnType,
+        modifiers = function.modifiers
+      )
+    }
   }
 
-  def generateFunctionDeclaration(node: FunctionDeclarationNode): Unit = {
+  def generateTopLevelFunction(node: FunctionDeclarationNode): Unit = {
     node.modifiers.collectFirst {
       case FunctionModifier.External(externalModule) =>
         module.dependencies += Dependency.Function(
@@ -53,17 +66,34 @@ class TianlongCompilerSession(
         )
         return
     }
-
     val block = typeEnvironment.root.surfaceSearchChild(node).get
-
-    val factory = module.createFunction(
+    
+    generateFunctionDeclaration(
+      block = block,
+      node = node,
       name = node.name,
-      parameters = node.parameters.map(_.nodeType.referenceDragon),
-      returnType = node.returnType.referenceDragon
+      parameters = node.parameters,
+      returnType = node.returnType,
+      modifiers = node.modifiers
+    )
+  }
+  
+  def generateFunctionDeclaration(
+                                   block: SymbolBlock,
+                                   node: FunctionDeclarationNode,
+                                   name: String,
+                                   parameters: List[FunctionParameterNode],
+                                   returnType: Type,
+                                   modifiers: Set[FunctionModifier],
+                                 ): Unit = {
+    val factory = module.createFunction(
+      name = name,
+      parameters = parameters.map(_.nodeType.referenceDragon),
+      returnType = returnType.referenceDragon
     )
     // TODO: remove index-based approach
     factory.function.parameters.zipWithIndex.foreach { case (param, index) =>
-      insertMemory(block, node.parameters(index).name, param)
+      insertMemory(block, parameters(index).name, param)
     }
 
     node.block.children.foreach { child =>
@@ -72,7 +102,7 @@ class TianlongCompilerSession(
         case None => println(s"Unknown node: $child")
       }
     }
-    if (node.returnType == Type.Void) {
+    if (returnType == Type.Void) {
       factory.statement(factory.returnStatement(EmptyValue))
     }
   }

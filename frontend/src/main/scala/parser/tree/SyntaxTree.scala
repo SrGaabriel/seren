@@ -75,13 +75,13 @@ case class StringLiteralNode(token: Token) extends TypedSyntaxTreeNode {
   override def toString: String = s"StringLiteralNode($value)"
 }
 
-case class FunctionDeclarationNode(
-                                    token: Token,
-                                    name: String,
-                                    returnType: Type,
-                                    parameters: List[FunctionParameterNode],
-                                    modifiers: Set[FunctionModifier],
-                                    block: BlockNode
+class FunctionDeclarationNode(
+                                    val token: Token,
+                                    val name: String,
+                                    var returnType: Type,
+                                    val parameters: List[FunctionParameterNode],
+                                    val modifiers: Set[FunctionModifier],
+                                    val block: BlockNode
                                   ) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = parameters :+ block
 
@@ -127,9 +127,10 @@ class ReferenceNode(val token: Token, val name: String, var nodeType: Type) exte
 class StructDeclarationNode(
                               val token: Token,
                               val name: String,
-                              val fields: List[StructFieldNode]
+                              val fields: List[StructFieldNode],
+                              val functions: List[FunctionDeclarationNode]
                            ) extends SyntaxTreeNode {
-  override val children: List[SyntaxTreeNode] = fields
+  override val children: List[SyntaxTreeNode] = fields ++ functions
   
   override def toString: String = s"StructDeclarationNode($name, $fields)"
 }

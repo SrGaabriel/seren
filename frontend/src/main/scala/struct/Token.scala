@@ -14,6 +14,7 @@ enum TokenKind:
   case SemiColon
   case Function
   case Struct
+  case This
   case Identifier
   case Return
   case Multiply

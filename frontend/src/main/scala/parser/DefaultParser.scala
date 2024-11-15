@@ -39,9 +39,13 @@ class DefaultParser extends Parser {
         for {
             structToken <- consumeToken(stream, TokenKind.Struct)
             nameToken <- consumeToken(stream, TokenKind.Identifier)
-            _ <- consumeToken(stream, TokenKind.LeftBrace)
-            fields <- parseSequence(stream, TokenKind.NewLine, TokenKind.RightBrace, parseStructField)
-        } yield StructDeclarationNode(structToken, nameToken.value, fields)
+            _ <- consumeToken(stream, TokenKind.LeftParenthesis)
+            fields <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseStructField)
+            functions <- consumeToken(stream, TokenKind.LeftBrace) match {
+                case Left(_) => Right(List.empty)
+                case Right(_) => parseExhaustiveSequence(stream, TokenKind.RightBrace, s => parseFunctionDeclaration(s, Set.empty))
+            }
+        } yield StructDeclarationNode(structToken, nameToken.value, fields, functions)
     }
 
     private def parseStructField(stream: TokenStream): Either[ParsingError, StructFieldNode] = {
@@ -55,7 +59,7 @@ class DefaultParser extends Parser {
     private def parseFunctionDeclaration(
                                           stream: TokenStream,
                                           modifiers: Set[FunctionModifier]
-                                        ): Either[ParsingError, SyntaxTreeNode] = {
+                                        ): Either[ParsingError, FunctionDeclarationNode] = {
         val isC = modifiers.exists {
             case FunctionModifier.External(name) => name == "C"
             case _ => false
@@ -77,6 +81,10 @@ class DefaultParser extends Parser {
     }
 
     private def parseFunctionParameter(stream: TokenStream, isC: Boolean=false): Either[ParsingError, FunctionParameterNode] = {
+        val isSelf = stream.peek.kind == TokenKind.This
+        if (isSelf) {
+            return Right(FunctionParameterNode(stream.next, "this", Type.UnknownThis))
+        }
         for {
             nameToken <- if isC then
                 Right(Token("", TokenKind.Identifier))
@@ -283,6 +291,7 @@ class DefaultParser extends Parser {
             case TokenKind.VoidType => Right(Type.Void)
             case TokenKind.Int32Type => Right(Type.Int)
             case TokenKind.StringLiteral => Right(Type.String)
+            case TokenKind.This => Right(Type.UnknownThis)
             case TokenKind.AnyType => Right(Type.Any)
             case _ => Left(InvalidTypeDeclarationError(token))
         }

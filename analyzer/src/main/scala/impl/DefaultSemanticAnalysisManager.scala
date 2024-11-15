@@ -23,6 +23,7 @@ class DefaultSemanticAnalysisManager(moduleManager: ModuleManager) extends Seman
       case node: AssignmentNode => analyzeNode(block, node, currentResult)
       case node: FunctionDeclarationNode => analyzeNode(block, node, currentResult)
       case node: FunctionCallNode => analyzeNode(block, node, currentResult)
+      case node: StructDeclarationNode => analyzeNode(block, node, currentResult)
       case _ => block
     }
 

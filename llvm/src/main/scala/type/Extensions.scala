@@ -11,6 +11,7 @@ extension (serenType: Type) {
     case Type.String => DragonType.Array(DragonType.Int8, 0)
     case Type.CType(name) => DragonType.Custom(name)
     case Type.Vararg(_) => DragonType.Vararg(None)
+    case Type.Struct(name) => DragonType.Struct(name)
     case _ => throw new Exception(s"Unsupported LLVM type $serenType")
   }
   def referenceDragon: DragonType = serenType match {

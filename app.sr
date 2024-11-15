@@ -1,6 +1,9 @@
-struct Vector {
-    x: int32
+struct Vector(
+    x: int32,
     y: int32
+) {
+    def get_x(this) : this {
+    }
 }
 
 def main() : int32 {
@@ -8,6 +11,10 @@ def main() : int32 {
     printf("What's up? %d", test())
     printf("Hello, World!")
     ret 0
+}
+
+def print_line(text: string) {
+    printf(text)
 }
 
 def test() : int32 {

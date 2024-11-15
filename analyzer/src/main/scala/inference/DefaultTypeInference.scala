@@ -17,12 +17,20 @@ class DefaultTypeInference extends TypeInference {
                                ): Unit = {
     val actualBlock = node match {
       case function: FunctionDeclarationNode =>
+        val actualType = resolveThis(block, function.returnType)
+        function.returnType = actualType
         module.addLocalFunction(
           name = function.name,
           params = function.parameters.map(p => p.nodeType),
-          returnType = function.returnType
+          returnType = actualType
         )
         block.createChild(function)
+      case struct: StructDeclarationNode =>
+        module.addStruct(
+          name = struct.name,
+          fields = struct.fields.map(f => f.nodeType)
+        )
+        block.createChild(struct)
       case _ => block
     }
 
@@ -53,8 +61,10 @@ class DefaultTypeInference extends TypeInference {
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
       case FunctionParameterNode(_, name, nodeType) =>
-        block.lazyDefine(node, TypeLiteral(nodeType))
-        block.lazyRegisterSymbol(name, TypeLiteral(nodeType))
+        println(s"Processing node!! Type: $nodeType")
+        val actualType = resolveThis(block, nodeType)
+        block.lazyDefine(node, TypeLiteral(actualType))
+        block.lazyRegisterSymbol(name, TypeLiteral(actualType))
       case assignmentNode: AssignmentNode =>
         val bodyType = processTypedNode(block, assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
@@ -68,6 +78,13 @@ class DefaultTypeInference extends TypeInference {
           println(s"Warning: registering unknown typed node $node")
         }
         block.lazyDefine(node, TypeLiteral(node.nodeType))
+    }
+  }
+
+  def resolveThis(block: LazySymbolBlock, typ: Type): Type = {
+    typ match {
+      case Type.UnknownThis => Type.Struct(block.id.asInstanceOf[StructDeclarationNode].name)
+      case _ => typ
     }
   }
 
