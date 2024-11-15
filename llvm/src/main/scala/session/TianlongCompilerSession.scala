@@ -85,6 +85,7 @@ class TianlongCompilerSession(
                                  ): Option[DragonStatement] = {
     node match {
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
+      case number: NumericNode => generateNumber(factory, number)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
@@ -102,7 +103,7 @@ class TianlongCompilerSession(
                       node: SyntaxTreeNode
                    ): Option[ValueReference] = {
     node match {
-      case number: NumericNode => generateNumber(factory, number)
+      case number: NumericNode => generateNumberValue(factory, number)
       case reference: ReferenceNode => generateReference(block, function, factory, reference)
       case _ => generateFunctionInstruction(block, function, factory, node) match {
         case Some(statement: TypedDragonStatement) => Some(factory.assign(statement))
@@ -128,6 +129,9 @@ class TianlongCompilerSession(
         val memory = factory.nextMemoryReference(node.nodeType.dragon)
         insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))
+      case Some(number: NumericNode) =>
+        println("vsf")
+        None
       case _ => None
     }
   }
@@ -188,11 +192,27 @@ class TianlongCompilerSession(
     Some(returns)
   }
 
-  def generateNumber(
+  def generateNumberValue(
                       factory: FunctionFactory,
                       node: NumericNode,
                     ): Option[ValueReference] = {
     Some(ConstantReference.Number(node.token.value, node.nodeType.dragon))
+  }
+  
+  def generateNumber(
+                      factory: FunctionFactory,
+                      node: NumericNode
+                    ): Option[BinaryOpStatement] = {
+    Some(factory.add(
+      ConstantReference.Number(
+        number = node.token.value,
+        dragonType = node.nodeType.dragon
+      ),
+      ConstantReference.Number(
+        number = "0",
+        dragonType = node.nodeType.dragon
+      )
+    ))
   }
   
   def generateBinaryOp(

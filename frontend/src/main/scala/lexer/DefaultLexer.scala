@@ -26,7 +26,6 @@ class DefaultLexer extends Lexer {
         case '/' => addToken("/", TokenKind.Divide)
         case '(' => addToken("(", TokenKind.LeftParenthesis)
         case ')' => addToken(")", TokenKind.RightParenthesis)
-        case '^' => addToken("^", TokenKind.Exponentiation)
         case '{' => addToken("{", TokenKind.LeftBrace)
         case '}' => addToken("}", TokenKind.RightBrace)
         case '<' => addToken("<", TokenKind.LeftAngleBracket)
@@ -112,7 +111,6 @@ class DefaultLexer extends Lexer {
       TokenKind.Minus,
       TokenKind.Multiply,
       TokenKind.Divide,
-      TokenKind.Exponentiation,
       TokenKind.Assign,
       TokenKind.Let,
       TokenKind.Function,
@@ -129,7 +127,6 @@ class DefaultLexer extends Lexer {
       TokenKind.Minus,
       TokenKind.Multiply,
       TokenKind.Divide,
-      TokenKind.Exponentiation,
       TokenKind.SemiColon,
       TokenKind.Function,
       TokenKind.EOF,

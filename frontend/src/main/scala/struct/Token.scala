@@ -20,7 +20,6 @@ enum TokenKind:
   case Vararg
   case Divide
   case Comma
-  case Exponentiation
   case LeftBrace
   case Assign
   case External

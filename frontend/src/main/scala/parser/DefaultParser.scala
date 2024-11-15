@@ -289,7 +289,6 @@ class DefaultParser extends Parser {
         case TokenKind.Minus => BinaryOp.Minus
         case TokenKind.Multiply => BinaryOp.Multiply
         case TokenKind.Divide => BinaryOp.Divide
-        case TokenKind.Exponentiation => BinaryOp.Power
         case _ => throw new IllegalArgumentException(s"Invalid binary operation: $tokenKind")
     }
 }
