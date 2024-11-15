@@ -6,6 +6,11 @@ trait ValueReference {
   def llvm: String
 }
 
+object EmptyValue extends ValueReference {
+  override val dragonType: DragonType = DragonType.Void
+  override def llvm: String = ""
+}
+
 case class MemoryReference(
                  register: Int,
                  dragonType: DragonType
@@ -26,10 +31,10 @@ object ConstantReference {
   }
 
   case class SmartString(
-                   text: String
-                   ) extends ConstantReference(DragonType.Array(
+                          text: String,
+                        ) extends ConstantReference(DragonType.Array(
     innerType = DragonType.Int8,
-    size = text.length
+    size = text.length + 1
   )) {
     override def llvm: String = s"c\"$text\\00\""
   }

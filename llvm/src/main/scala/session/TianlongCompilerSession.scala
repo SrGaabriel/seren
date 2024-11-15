@@ -4,14 +4,14 @@ package session
 import `type`.dragon
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, FunctionCallNode, FunctionDeclarationNode, NumericNode, ReferenceNode, ReturnNode, StringLiteralNode, StructDeclarationNode, SyntaxTree, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.Type
+import me.gabriel.seren.frontend.parser.tree.*
 import me.gabriel.seren.frontend.struct.FunctionModifier
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
-import me.gabriel.tianlong.statement.{AddStatement, AssignStatement, CallStatement, DragonStatement, GetElementPointerStatement, TypedDragonStatement}
-import me.gabriel.tianlong.struct.Dependency.Constant
-import me.gabriel.tianlong.struct.{ConstantReference, Dependency, MemoryReference, ValueReference}
+import me.gabriel.tianlong.statement.*
+import me.gabriel.tianlong.struct.*
 
 import scala.collection.mutable
 
@@ -68,8 +68,11 @@ class TianlongCompilerSession(
     node.block.children.foreach { child =>
       generateFunctionInstruction(block, node, factory, child) match {
         case Some(statement) => factory.statement(statement)
-        case None => None
+        case None => println(s"Unknown node: $child")
       }
+    }
+    if (node.returnType == Type.Void) {
+      factory.statement(factory.returnStatement(EmptyValue))
     }
   }
 
@@ -100,7 +103,7 @@ class TianlongCompilerSession(
     node match {
       case reference: ReferenceNode => generateReference(block, function, factory, reference)
       case _ => generateFunctionInstruction(block, function, factory, node) match {
-        case Some(statement: TypedDragonStatement) => Some(statement)
+        case Some(statement: TypedDragonStatement) => Some(factory.assign(statement))
         case _ => None
       }
     }
@@ -147,7 +150,7 @@ class TianlongCompilerSession(
                     function: FunctionDeclarationNode,
                     factory: FunctionFactory,
                     node: FunctionCallNode
-                  ): Option[CallStatement] = {
+                  ): Option[DragonStatement] = {
     val arguments = node.arguments.map { argument =>
       generateValue(
         block = block,
@@ -157,9 +160,10 @@ class TianlongCompilerSession(
       ).get
     }
 
+    val returnType = node.nodeType.dragon
     val call = factory.call(
       name = node.name,
-      returnType = node.nodeType.dragon,
+      returnType = returnType,
       arguments = arguments
     )
     Some(call)
@@ -172,12 +176,12 @@ class TianlongCompilerSession(
                       node: ReturnNode
                     ): Option[DragonStatement] = {
     val returns = factory.returnStatement(
-      value = generateFunctionInstruction(
+      value = generateValue(
         block = block,
         function = function,
         factory = factory,
         node = node.value
-      ).get.asInstanceOf[TypedDragonStatement]
+      ).get
     )
     Some(returns)
   }
@@ -203,7 +207,7 @@ class TianlongCompilerSession(
                       node: StringLiteralNode
                     ): Option[GetElementPointerStatement] = {
     val format = factory.useFormat(
-      name = node.hashCode.toString,
+      name = s"str_${node.hashCode.toString}",
       value = node.token.value
     )
     

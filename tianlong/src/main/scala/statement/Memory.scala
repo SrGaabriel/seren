@@ -64,7 +64,8 @@ case class GetElementPointerStatement(
   override def valid: Boolean = true
 
   override val statementType: DragonType = DragonType.ContextualPointer(elementType)
-  
+  override val dragonType: DragonType = DragonType.ContextualPointer(elementType)
+
   private def originalType = struct.dragonType match {
     case DragonType.ContextualPointer(inner) => inner
     case regular => regular
@@ -75,6 +76,6 @@ case class GetElementPointerStatement(
     s"getelementptr" +
       s"${if (inBounds) " inbounds" else ""}" +
       s" ${originalType.llvm}, ${pointerType.llvm} ${struct.llvm}" +
-      s"${if (total) ", i32 0" else ""}${elementType.llvm} ${index.llvm}" +
+      s"${if (total) ", i32 0" else ""}" +
       s", ${index.dragonType.llvm} ${index.llvm}"
 }

@@ -114,7 +114,6 @@ class DefaultLexer extends Lexer {
       TokenKind.Function,
       TokenKind.Return,
       TokenKind.BOF,
-      TokenKind.RightParenthesis,
       TokenKind.RightBrace,
     )
 

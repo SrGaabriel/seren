@@ -5,11 +5,12 @@ struct Vector {
 
 fn main() : int32 {
     a := "Hello, World!"
-    print_line(test())
+    printf(a)
+    ret 0
 }
 
 fn test() : int32 {
-    ret 5
+    ret 6
 }
 
 fn print_line(a: int32) : void {

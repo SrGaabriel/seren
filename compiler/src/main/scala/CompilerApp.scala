@@ -1,5 +1,7 @@
 package me.gabriel.seren.compiler
 
+import io.{CompilerCommandLine, CompilerIoHandler}
+
 import me.gabriel.seren.analyzer.TypeEnvironment
 import me.gabriel.seren.analyzer.external.{Directive, ModuleManager}
 import me.gabriel.seren.analyzer.impl.DefaultSemanticAnalysisManager
@@ -10,29 +12,28 @@ import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
 import me.gabriel.seren.frontend.struct.TokenStream
 import me.gabriel.seren.llvm.SerenDragonCompiler
 
-object CompilerApp extends App {
-  private val lexer: Lexer = new DefaultLexer
-  private val result = lexer.lex(getSourceCode())
-  result.fold(
-    error => {
-      println(s"Lexing Error: ${error.message}")
-      sys.exit(1)
-    },
-    tokens => tokens.foreach(println)
-  )
-  private val stream = TokenStream(result.right.get)
+@main def main(args: String*): Unit = {
+  val cli = new CompilerCommandLine(args.toList)
+  val options = cli.parse()
+  val io = new CompilerIoHandler
+  val lexer: Lexer = new DefaultLexer
+  val sourceCode = io.readFile(options.inputFile)
+  val result = lexer.lex(sourceCode)
 
-  private val parser: Parser = new DefaultParser
-  private val syntaxTree = parser.parse(stream)
-  syntaxTree.fold(
-    error => {
-      println(s"Parsing Error: ${error.message}")
-      sys.exit(1)
-    },
-    tree => println(tree.prettyPrintTyped)
-  )
+  result.left.foreach(error => {
+    println(s"Lexing error: ${error.message}")
+    sys.exit(1)
+  })
+  val stream = TokenStream(result.right.get)
 
-  private val moduleManager = ModuleManager(
+  val parser: Parser = new DefaultParser
+  val syntaxTree = parser.parse(stream)
+  syntaxTree.left.foreach(error => {
+    println(s"Parsing error: ${error.message}")
+    sys.exit(1)
+  })
+
+  val moduleManager = ModuleManager(
     directive = Directive(module = "root", subdirectories = List.empty)
   )
   moduleManager.addLocalFunction(
@@ -41,17 +42,14 @@ object CompilerApp extends App {
     returnType = Type.Void
   )
 
-  private val tree = syntaxTree.right.get
-  private val root = tree.root
-  private val typeEnvironment = new TypeEnvironment("main", root)
-  private val typeInference = new DefaultTypeInference
-  private val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
-  
+  val tree = syntaxTree.right.get
+  val root = tree.root
+  val typeEnvironment = new TypeEnvironment("main", root)
+  val typeInference = new DefaultTypeInference
+  val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
+
   typeInference.traverseBottomUp(moduleManager, lazyTypeRoot, root)
   TypeSynthesizer.updateTreeTypes(moduleManager, lazyTypeRoot)
-  println("===========================")
-  println(tree.prettyPrintTyped)
-  println("===========================")
 
   val analysisManager = DefaultSemanticAnalysisManager()
   val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
@@ -62,13 +60,12 @@ object CompilerApp extends App {
   }
 
   val compiler = SerenDragonCompiler()
-  println(compiler.compile(
-    tree, typeEnvironment
-  ))
+  val llvmCode = compiler.compile(tree, typeEnvironment)
 
-  private def getSourceCode(): String = {
-    val file = new java.io.File("app.sr")
-    val source = scala.io.Source.fromFile(file)
-    source.mkString
+  val llFileName = options.output.getOrElse(options.inputFile.replace(".sr", ".ll"))
+  val llFile = io.writeFile(llFileName, llvmCode)
+  if (!options.llvmOnly) {
+    io.linkLlFileToExecutable(llFileName, llFileName.replace(".ll", ".exe"))
+    llFile.delete()
   }
 }

@@ -10,7 +10,7 @@ case class ReturnStatement(
 
   override def valid: Boolean = true
 
-  override def statementLlvm: String = s"ret ${value.llvm}"
+  override def statementLlvm: String = s"ret ${value.dragonType.llvm} ${value.llvm}"
 }
 
 case class CallStatement(
@@ -24,6 +24,6 @@ case class CallStatement(
 
   override def statementLlvm: String = {
     val args = arguments.map(_.dragonType.llvm).zip(arguments.map(_.llvm)).map((dragonType, llvm) => s"$dragonType $llvm").mkString(", ")
-    s"call ${statementType.llvm} $name($args)"
+    s"call ${statementType.llvm} @$name($args)"
   }
 }

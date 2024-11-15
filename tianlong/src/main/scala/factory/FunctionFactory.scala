@@ -19,15 +19,12 @@ class FunctionFactory(
     if (!statement.valid) {
       throw new IllegalArgumentException(s"Invalid statement: $statement")
     }
-    statement match {
-      case call: CallStatement =>
-        call.arguments.foreach {
-          case reference: MemoryReference =>
-            escapees += reference
-          case _ =>
-        }
+    if (statement.isInstanceOf[CallStatement]) {
+      escapees ++= statement.memoryDependencies.collect {
+        case memoryReference: MemoryReference => memoryReference
+      }
     }
-
+    
     currentRegister += 1
     function.statements += statement
     this
