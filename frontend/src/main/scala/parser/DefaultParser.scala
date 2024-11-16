@@ -6,6 +6,8 @@ import error.ParsingError
 import parser.tree.*
 import struct.{BinaryOp, FunctionModifier, Token, TokenKind, TokenStream}
 
+import scala.annotation.tailrec
+
 class DefaultParser extends Parser {
     def parse(stream: TokenStream): Either[ParsingError, SyntaxTree] = {
         val bof = stream.next
@@ -16,6 +18,7 @@ class DefaultParser extends Parser {
         }
     }
 
+    @tailrec
     private def parseTopLevelDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
@@ -129,12 +132,16 @@ class DefaultParser extends Parser {
         if (token.isLeft) return Left(UnexpectedTokenError(stream.peek))
 
         val identifier = token.toOption.get
+        println(identifier)
 
         stream.peek.kind match {
             case TokenKind.LeftParenthesis => parseFunctionCall(stream, identifier)
             case _ => parseIdentifierAccess(
                 stream,
-                ReferenceNode(identifier, identifier.value, Type.Unknown)
+                ReferenceNode(identifier, identifier.value, identifier.kind match {
+                    case TokenKind.Identifier => Type.Unknown
+                    case TokenKind.This => Type.UnknownThis
+                })
             )
         }
     }
@@ -154,7 +161,7 @@ class DefaultParser extends Parser {
                         nodeType = Type.Unknown
                     )
                     if (structAccess.isLeft) return structAccess
-                    currentNode = structAccess.right.get
+                    currentNode = structAccess.toOption.get
                 case _ => return Right(currentNode)
             }
         }

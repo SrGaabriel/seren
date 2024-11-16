@@ -50,16 +50,25 @@ class DefaultTypeInference extends TypeInference {
                                  node: TypedSyntaxTreeNode
                                ): LazyType = {
     node match {
-      case functionNode: FunctionDeclarationNode =>
-        val paramTypes = functionNode.parameters.map(_ => newTypeVar())
-
-        val typeFun = TypeFunction(
-          from = paramTypes,
-          to = TypeLiteral(node.nodeType)
-        )
-        block.lazyDefine(functionNode, typeFun)
+//      case functionNode: FunctionDeclarationNode =>
+//        val paramTypes = functionNode.parameters.map(_ => newTypeVar())
+//
+//        val typeFun = TypeFunction(
+//          from = paramTypes,
+//          to = TypeLiteral(node.nodeType)
+//        )
+//        block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
+      case structAccessNode: StructFieldAccessNode =>
+        val structType = resolveThis(block, structAccessNode.struct.nodeType)
+        structType match {
+          case Type.Struct(_, fields) =>
+            val fieldType = fields(structAccessNode.fieldName)
+            block.lazyDefine(structAccessNode, TypeLiteral(fieldType))
+          case _ =>
+            block.lazyDefine(structAccessNode, TypeLiteral(Type.Unknown))
+        }
       case FunctionParameterNode(_, name, nodeType) =>
         val actualType = resolveThis(block, nodeType)
         block.lazyDefine(node, TypeLiteral(actualType))
@@ -82,7 +91,9 @@ class DefaultTypeInference extends TypeInference {
 
   def resolveThis(block: LazySymbolBlock, typ: Type): Type = {
     typ match {
-      case Type.UnknownThis => block.searchStruct().map(_.name).map(Type.Struct.apply).getOrElse(Type.UnknownThis)
+      case Type.UnknownThis => block.searchStruct().map(node =>
+        Type.Struct(node.name, node.fields.map(f => f.name -> f.nodeType).toMap)
+      ).getOrElse(Type.UnknownThis)
       case _ => typ
     }
   }

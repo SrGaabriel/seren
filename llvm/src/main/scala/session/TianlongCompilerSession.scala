@@ -13,6 +13,7 @@ import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*
 import me.gabriel.tianlong.struct.*
+import me.gabriel.tianlong.struct.DragonType.Int32
 
 import scala.collection.mutable
 
@@ -120,6 +121,7 @@ class TianlongCompilerSession(
       case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case string: StringLiteralNode => generateString(factory, string)
+      case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case _ =>
         println(s"Unknown node: $node")
         None
@@ -172,13 +174,7 @@ class TianlongCompilerSession(
                         factory: FunctionFactory,
                         node: ReferenceNode
                        ): Option[MemoryReference] = {
-    memoryReferences.get(block) match {
-      case Some(references) => references.get(node.name) match {
-        case Some(reference) => Some(reference)
-        case None => None
-      }
-      case None => None
-    }
+    memoryReferences.get(block).flatMap(_.get(node.name))
   }
 
   def generateCall(
@@ -220,6 +216,28 @@ class TianlongCompilerSession(
       ).get
     )
     Some(returns)
+  }
+  
+  def generateStructFieldAccess(
+                            block: SymbolBlock,
+                            function: FunctionDeclarationNode,
+                            factory: FunctionFactory,
+                            node: StructFieldAccessNode
+                          ): Option[GetElementPointerStatement] = {
+    val struct = generateValue(
+      block = block,
+      function = function,
+      factory = factory,
+      node = node.struct
+    ).get
+    println(node.struct)
+    println(node.struct.nodeType)
+    val indexOfField = node.struct.nodeType.asInstanceOf[Type.Struct].fields.keySet.toList.indexOf(node.fieldName)
+    Some(factory.getElementAt(
+      struct = struct,
+      elementType = node.nodeType.referenceDragon,
+      index = ConstantReference.Number(indexOfField.toString, Int32)
+    ))
   }
 
   def generateNumberValue(

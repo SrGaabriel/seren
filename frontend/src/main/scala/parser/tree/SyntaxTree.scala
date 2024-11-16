@@ -121,7 +121,7 @@ class AssignmentNode(val token: Token, val name: String, val value: TypedSyntaxT
 class ReferenceNode(val token: Token, val name: String, var nodeType: Type) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
-  override def toString: String = s"ReferenceNode($name)"
+  override def toString: String = s"ReferenceNode($name, $nodeType)"
 }
 
 class StructDeclarationNode(

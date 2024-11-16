@@ -1,9 +1,10 @@
 package me.gabriel.seren.analyzer
 package inference
 
-import me.gabriel.seren.analyzer.external.ModuleManager
+import external.ModuleManager
+
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.{AssignmentNode, NumericNode, SyntaxTreeNode, TypedSyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{NumericNode, SyntaxTreeNode, TypedSyntaxTreeNode}
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -59,6 +60,7 @@ object TypeSynthesizer {
       case TypeFunction(from, to) =>
         lazyTypeToType(module, block, to)
       case TypeVariable(name) =>
+        println(s"Searching for $name in ${block.lazySymbols}")
         lazyTypeToType(module, block, block.lazySymbols(name))
       case TypeCall(name, params) =>
         val functionPackage = module.searchFunction(name)
