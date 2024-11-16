@@ -114,6 +114,13 @@ class FunctionFactory(
   def returnStatement(value: ValueReference): ReturnStatement = {
     ReturnStatement(value)
   }
+
+  def assignAndLoadIfImmutable(value: TypedDragonStatement): Option[LoadStatement] = {
+    value.dragonType match {
+      case _: DragonType.Struct => None
+      case _ => Some(LoadStatement(assign(value)))
+    }
+  }
   
   def nextMemoryReference(dragonType: DragonType): MemoryReference = {
     val memoryReference = MemoryReference(currentRegister, dragonType)

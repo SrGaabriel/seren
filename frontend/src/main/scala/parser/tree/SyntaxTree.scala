@@ -151,7 +151,7 @@ class StructFieldAccessNode(
                             val fieldName: String,
                             var nodeType: Type
                            ) extends TypedSyntaxTreeNode {
-  override val children: List[SyntaxTreeNode] = List.empty
+  override val children: List[SyntaxTreeNode] = List(struct)
 
   override def toString: String = s"StructFieldAccessNode($token, $struct, $fieldName)"
 }

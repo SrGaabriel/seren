@@ -16,6 +16,7 @@ extension (serenType: Type) {
   }
   def referenceDragon: DragonType = serenType match {
     case Type.String => DragonType.ContextualPointer(DragonType.Int8)
+    case Type.Struct(_, _) => DragonType.ContextualPointer(allocationDragon)
     case _ => allocationDragon
   }
 }

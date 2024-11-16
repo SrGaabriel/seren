@@ -223,7 +223,7 @@ class TianlongCompilerSession(
                             function: FunctionDeclarationNode,
                             factory: FunctionFactory,
                             node: StructFieldAccessNode
-                          ): Option[GetElementPointerStatement] = {
+                          ): Option[TypedDragonStatement] = {
     val struct = generateValue(
       block = block,
       function = function,
@@ -233,11 +233,13 @@ class TianlongCompilerSession(
     println(node.struct)
     println(node.struct.nodeType)
     val indexOfField = node.struct.nodeType.asInstanceOf[Type.Struct].fields.keySet.toList.indexOf(node.fieldName)
-    Some(factory.getElementAt(
+    val element = factory.getElementAt(
       struct = struct,
       elementType = node.nodeType.referenceDragon,
       index = ConstantReference.Number(indexOfField.toString, Int32)
-    ))
+    )
+    
+    Some(factory.assignAndLoadIfImmutable(element).getOrElse(element))
   }
 
   def generateNumberValue(

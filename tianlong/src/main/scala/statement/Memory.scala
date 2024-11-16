@@ -52,6 +52,21 @@ case class AllocateStatement(
   override def statementLlvm: String = s"alloca ${allocationType.llvm}, align $alignment"
 }
 
+case class LoadStatement(
+                          pointer: ValueReference
+                        ) extends TypedDragonStatement {
+  override val memoryDependencies: List[ValueReference] = List(pointer)
+
+  override def valid: Boolean = pointer.dragonType.isPointer
+
+  override val statementType: DragonType = pointer.dragonType match {
+    case DragonType.ContextualPointer(inner) => inner
+    case regular => regular
+  }
+
+  override def statementLlvm: String = s"load ${statementType.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
+}
+
 case class GetElementPointerStatement(
                                      struct: ValueReference,
                                      elementType: DragonType,
