@@ -132,7 +132,6 @@ class DefaultParser extends Parser {
         if (token.isLeft) return Left(UnexpectedTokenError(stream.peek))
 
         val identifier = token.toOption.get
-        println(identifier)
 
         stream.peek.kind match {
             case TokenKind.LeftParenthesis => parseFunctionCall(stream, identifier)

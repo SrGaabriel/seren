@@ -10,7 +10,7 @@ case class ReturnStatement(
 
   override def valid: Boolean = true
 
-  override def statementLlvm: String = s"ret ${value.dragonType.llvm} ${value.llvm}"
+  override def statementLlvm: String = { s"ret ${value.dragonType.llvm} ${value.llvm}" }
 }
 
 case class CallStatement(

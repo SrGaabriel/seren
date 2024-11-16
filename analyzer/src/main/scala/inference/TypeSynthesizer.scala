@@ -60,7 +60,6 @@ object TypeSynthesizer {
       case TypeFunction(from, to) =>
         lazyTypeToType(module, block, to)
       case TypeVariable(name) =>
-        println(s"Searching for $name in ${block.lazySymbols}")
         lazyTypeToType(module, block, block.lazySymbols(name))
       case TypeCall(name, params) =>
         val functionPackage = module.searchFunction(name)

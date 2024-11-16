@@ -63,6 +63,7 @@ case class LoadStatement(
     case DragonType.ContextualPointer(inner) => inner
     case regular => regular
   }
+  override val dragonType: DragonType = statementType
 
   override def statementLlvm: String = s"load ${statementType.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
 }

@@ -8,6 +8,7 @@ struct Vector(
 }
 
 def main() : int32 {
+    b := 5
     printf("Hello, World!")
     printf("What's up? %d", test())
     printf("Hello, World!")

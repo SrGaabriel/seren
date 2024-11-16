@@ -116,12 +116,8 @@ class TianlongCompilerSession(
                                  ): Option[DragonStatement] = {
     node match {
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
-      case number: NumericNode => generateNumber(factory, number)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
-      case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
-      case string: StringLiteralNode => generateString(factory, string)
-      case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case _ =>
         println(s"Unknown node: $node")
         None
@@ -132,15 +128,24 @@ class TianlongCompilerSession(
                       block: SymbolBlock,
                       function: FunctionDeclarationNode,
                       factory: FunctionFactory,
-                      node: SyntaxTreeNode
+                      node: SyntaxTreeNode,
+                      nest: Boolean = true
                    ): Option[ValueReference] = {
-    node match {
-      case number: NumericNode => generateNumberValue(factory, number)
+    val value = node match {
+      case number: NumericNode if nest => generateNumberValue(factory, number)
+      case number: NumericNode => generateNumber(factory, number)
       case reference: ReferenceNode => generateReference(block, function, factory, reference)
-      case _ => generateFunctionInstruction(block, function, factory, node) match {
-        case Some(statement: TypedDragonStatement) => Some(factory.assign(statement))
-        case _ => None
-      }
+      case string: StringLiteralNode => generateString(factory, string)
+      case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
+      case call: FunctionCallNode => generateCall(block, function, factory, call)
+      case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
+      case _ =>
+        println(s"Unknown node: $node")
+        None
+    }
+    value match {
+      case Some(statement: TypedDragonStatement) => Some(factory.assign(statement))
+      case _ => value
     }
   }
   
@@ -150,20 +155,18 @@ class TianlongCompilerSession(
                           factory: FunctionFactory,
                           node: AssignmentNode
                         ): Option[AssignStatement] = {
-    val value = generateFunctionInstruction(
+    val value = generateValue(
       block = block,
       function = function,
       factory = factory,
-      node = node.value
+      node = node.value,
+      nest = false
     )
     value match {
       case Some(statement: TypedDragonStatement) =>
         val memory = factory.nextMemoryReference(node.nodeType.referenceDragon)
         insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))
-      case Some(number: NumericNode) =>
-        println("vsf")
-        None
       case _ => None
     }
   }
@@ -182,7 +185,7 @@ class TianlongCompilerSession(
                     function: FunctionDeclarationNode,
                     factory: FunctionFactory,
                     node: FunctionCallNode
-                  ): Option[DragonStatement] = {
+                  ): Option[CallStatement] = {
     val arguments = node.arguments.map { argument =>
       generateValue(
         block = block,
@@ -230,8 +233,6 @@ class TianlongCompilerSession(
       factory = factory,
       node = node.struct
     ).get
-    println(node.struct)
-    println(node.struct.nodeType)
     val indexOfField = node.struct.nodeType.asInstanceOf[Type.Struct].fields.keySet.toList.indexOf(node.fieldName)
     val element = factory.getElementAt(
       struct = struct,
