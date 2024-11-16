@@ -2,7 +2,7 @@ package me.gabriel.seren.analyzer
 package inference
 
 import scala.collection.mutable
-import me.gabriel.seren.frontend.parser.tree.{FunctionDeclarationNode, SyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.{FunctionDeclarationNode, StructDeclarationNode, SyntaxTreeNode}
 
 import scala.language.implicitConversions
 
@@ -29,6 +29,13 @@ class LazySymbolBlock(
   def lazyRegisterSymbol(name: String, lazyType: LazyType): LazyType = {
     lazySymbols(name) = lazyType
     lazyType
+  }
+
+  def searchStruct(): Option[StructDeclarationNode] = {
+    id match {
+      case struct: StructDeclarationNode => Some(struct)
+      case _ => parent.flatMap(_.searchStruct())
+    }
   }
   
   def prettyPrintLazyTypes(): Unit = {

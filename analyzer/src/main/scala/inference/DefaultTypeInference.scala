@@ -4,7 +4,7 @@ package inference
 import external.ModuleManager
 
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.*
+import me.gabriel.seren.frontend.parser.tree.{StructDeclarationNode, *}
 
 class DefaultTypeInference extends TypeInference {
   private var typeVarCounter = 0
@@ -61,7 +61,6 @@ class DefaultTypeInference extends TypeInference {
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
       case FunctionParameterNode(_, name, nodeType) =>
-        println(s"Processing node!! Type: $nodeType")
         val actualType = resolveThis(block, nodeType)
         block.lazyDefine(node, TypeLiteral(actualType))
         block.lazyRegisterSymbol(name, TypeLiteral(actualType))
@@ -83,7 +82,7 @@ class DefaultTypeInference extends TypeInference {
 
   def resolveThis(block: LazySymbolBlock, typ: Type): Type = {
     typ match {
-      case Type.UnknownThis => Type.Struct(block.id.asInstanceOf[StructDeclarationNode].name)
+      case Type.UnknownThis => block.searchStruct().map(_.name).map(Type.Struct.apply).getOrElse(Type.UnknownThis)
       case _ => typ
     }
   }

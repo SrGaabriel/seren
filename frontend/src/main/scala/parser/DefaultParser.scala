@@ -125,15 +125,40 @@ class DefaultParser extends Parser {
     }
 
     private def parseIdentifierExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
-        val token = consumeToken(stream, TokenKind.Identifier)
+        val token = consumeOneOfTokens(stream, Array(TokenKind.Identifier, TokenKind.This))
         if (token.isLeft) return Left(UnexpectedTokenError(stream.peek))
 
         val identifier = token.toOption.get
 
         stream.peek.kind match {
             case TokenKind.LeftParenthesis => parseFunctionCall(stream, identifier)
-            case _ => Right(ReferenceNode(identifier, identifier.value, Type.Unknown))
+            case _ => parseIdentifierAccess(
+                stream,
+                ReferenceNode(identifier, identifier.value, Type.Unknown)
+            )
         }
+    }
+
+    private def parseIdentifierAccess(stream: TokenStream, reference: ReferenceNode): Either[ParsingError, TypedSyntaxTreeNode] = {
+        var currentNode: TypedSyntaxTreeNode = reference
+        while (true) {
+            stream.peek.kind match {
+                case TokenKind.Dot =>
+                    val structAccess = for {
+                        accessToken <- consumeToken(stream, TokenKind.Dot)
+                        identifier <- consumeToken(stream, TokenKind.Identifier)
+                    } yield StructFieldAccessNode(
+                        token = accessToken,
+                        struct = currentNode,
+                        fieldName = identifier.value,
+                        nodeType = Type.Unknown
+                    )
+                    if (structAccess.isLeft) return structAccess
+                    currentNode = structAccess.right.get
+                case _ => return Right(currentNode)
+            }
+        }
+        Right(currentNode)
     }
 
     private def parseReturnStatement(stream: TokenStream): Either[ParsingError, ReturnNode] = {
@@ -187,7 +212,7 @@ class DefaultParser extends Parser {
         peek.kind match {
             case TokenKind.NumberLiteral => parseNumberLiteral(stream)
             case TokenKind.StringLiteral => parseString(stream)
-            case TokenKind.Identifier => parseIdentifierExpression(stream)
+            case TokenKind.Identifier | TokenKind.This => parseIdentifierExpression(stream)
             case _ => Left(UnexpectedTokenError(peek))
         }
     }
@@ -274,6 +299,16 @@ class DefaultParser extends Parser {
             Right(token)
         } else {
             Left(ExpectedTokenError(token, kind))
+        }
+    }
+
+    private def consumeOneOfTokens(stream: TokenStream, tokens: Array[TokenKind]): Either[ParsingError, Token] = {
+        val token = stream.peek
+        if (tokens.contains(token.kind)) {
+            stream.next
+            Right(token)
+        } else {
+            Left(ExpectedTokenError(token, tokens.head))
         }
     }
 

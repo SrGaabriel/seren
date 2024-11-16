@@ -2,7 +2,8 @@ struct Vector(
     x: int32,
     y: int32
 ) {
-    def get_x(this) : this {
+    def get_x(this) : int32 {
+        ret this.x
     }
 }
 

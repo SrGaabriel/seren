@@ -40,6 +40,7 @@ class DefaultLexer extends Lexer {
           }
         case '.' if input.drop(position).startsWith("...") =>
           addToken("...", TokenKind.Vararg)
+        case '.' => addToken(".", TokenKind.Dot)
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))

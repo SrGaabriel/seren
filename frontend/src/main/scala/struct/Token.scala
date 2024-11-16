@@ -21,6 +21,7 @@ enum TokenKind:
   case Vararg
   case Divide
   case Comma
+  case Dot
   case LeftBrace
   case Assign
   case External

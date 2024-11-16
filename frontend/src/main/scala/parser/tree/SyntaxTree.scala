@@ -144,3 +144,14 @@ class StructFieldNode(
 
   override def toString: String = s"StructFieldNode($name)"
 }
+
+class StructFieldAccessNode(
+                            val token: Token,
+                            val struct: TypedSyntaxTreeNode,
+                            val fieldName: String,
+                            var nodeType: Type
+                           ) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+
+  override def toString: String = s"StructFieldAccessNode($token, $struct, $fieldName)"
+}
