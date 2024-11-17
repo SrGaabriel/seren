@@ -1,25 +1,23 @@
-struct Vector(
-    x: int32,
-    y: int32
-) {
-    def get_x(this) : int32 {
-        ret this.x
-    }
+struct Vector(x :: int32, y :: int32)
+
+def get_x(vector :: Vector) :: int32 {
+    ret vector.x
 }
 
-def main() : int32 {
+def main() :: int32 {
     b := 5
+
     printf("Hello, World!")
     printf("What's up? %d", test())
     printf("Hello, World!")
     ret 0
 }
 
-def print_line(text: string) {
+def print_line(text :: string) {
     printf(text)
 }
 
-def test() : int32 {
+def test() :: int32 {
     ret 6
 }
 

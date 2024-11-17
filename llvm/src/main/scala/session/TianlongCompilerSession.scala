@@ -100,7 +100,7 @@ class TianlongCompilerSession(
     node.block.children.foreach { child =>
       generateFunctionInstruction(block, node, factory, child) match {
         case Some(statement) => factory.statement(statement)
-        case None => println(s"Unknown node: $child")
+        case _ =>
       }
     }
     if (returnType == Type.Void) {
@@ -119,7 +119,7 @@ class TianlongCompilerSession(
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case _ =>
-        println(s"Unknown node: $node")
+        println(s"Unknown instruction: $node")
         None
     }
   }
@@ -140,7 +140,7 @@ class TianlongCompilerSession(
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case _ =>
-        println(s"Unknown node: $node")
+        println(s"Unknown value: $node")
         None
     }
     value match {
@@ -161,9 +161,9 @@ class TianlongCompilerSession(
       factory = factory,
       node = node.value,
       nest = false
-    )
+    ).get
     value match {
-      case Some(statement: TypedDragonStatement) =>
+      case statement: TypedDragonStatement =>
         val memory = factory.nextMemoryReference(node.nodeType.referenceDragon)
         insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))

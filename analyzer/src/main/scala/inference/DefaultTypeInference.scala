@@ -17,18 +17,16 @@ class DefaultTypeInference extends TypeInference {
                                ): Unit = {
     val actualBlock = node match {
       case function: FunctionDeclarationNode =>
-        val actualType = resolveThis(block, function.returnType)
-        function.returnType = actualType
         module.addLocalFunction(
           name = function.name,
           params = function.parameters.map(p => p.nodeType),
-          returnType = actualType
+          returnType = function.returnType
         )
         block.createChild(function)
       case struct: StructDeclarationNode =>
         module.addStruct(
           name = struct.name,
-          fields = struct.fields.map(f => f.nodeType)
+          fields = struct.fields.map(f => f.name -> f.nodeType).toMap
         )
         block.createChild(struct)
       case _ => block
@@ -50,37 +48,27 @@ class DefaultTypeInference extends TypeInference {
                                  node: TypedSyntaxTreeNode
                                ): LazyType = {
     node match {
-//      case functionNode: FunctionDeclarationNode =>
-//        val paramTypes = functionNode.parameters.map(_ => newTypeVar())
-//
-//        val typeFun = TypeFunction(
-//          from = paramTypes,
-//          to = TypeLiteral(node.nodeType)
-//        )
-//        block.lazyDefine(functionNode, typeFun)
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
+
       case structAccessNode: StructFieldAccessNode =>
-        val structType = resolveThis(block, structAccessNode.struct.nodeType)
-        structType match {
-          case Type.Struct(_, fields) =>
-            val fieldType = fields(structAccessNode.fieldName)
-            block.lazyDefine(structAccessNode, TypeLiteral(fieldType))
-          case _ =>
-            block.lazyDefine(structAccessNode, TypeLiteral(Type.Unknown))
-        }
+        val structType = processTypedNode(block, structAccessNode.struct)
+        block.lazyDefine(structAccessNode, TypeAccess(structType, structAccessNode.fieldName))
+
       case FunctionParameterNode(_, name, nodeType) =>
-        val actualType = resolveThis(block, nodeType)
-        block.lazyDefine(node, TypeLiteral(actualType))
-        block.lazyRegisterSymbol(name, TypeLiteral(actualType))
+        block.lazyDefine(node, TypeLiteral(nodeType))
+        block.lazyRegisterSymbol(name, TypeLiteral(nodeType))
+
       case assignmentNode: AssignmentNode =>
         val bodyType = processTypedNode(block, assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
         block.lazyRegisterSymbol(assignmentNode.name, bodyType)
+
       case callNode: FunctionCallNode =>
         block.lazyDefine(callNode, TypeCall(callNode.name, callNode.arguments.map(
-          argument => processTypedNode(block,argument)
+          argument => processTypedNode(block, argument)
         )))
+
       case _ =>
         if (node.nodeType == Type.Unknown) {
           println(s"Warning: registering unknown typed node $node")
@@ -88,20 +76,4 @@ class DefaultTypeInference extends TypeInference {
         block.lazyDefine(node, TypeLiteral(node.nodeType))
     }
   }
-
-  def resolveThis(block: LazySymbolBlock, typ: Type): Type = {
-    typ match {
-      case Type.UnknownThis => block.searchStruct().map(node =>
-        Type.Struct(node.name, node.fields.map(f => f.name -> f.nodeType).toMap)
-      ).getOrElse(Type.UnknownThis)
-      case _ => typ
-    }
-  }
-
-//  def searchReturnType(block: LazySymbolBlock, node: SyntaxTreeNode): LazyType = {
-//    node match {
-//      case returnNode: ReturnNode => block.lazyTypes(returnNode)
-//      case _ => node.children.map(searchReturnType(block, _)).last
-//    }
-//  }
 }

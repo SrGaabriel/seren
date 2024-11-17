@@ -34,6 +34,6 @@ object ParsingError {
   }
   
   case class InvalidTypeDeclarationError(token: Token) extends ParsingError {
-    override val message: String = s"Invalid type declaration: ${token.kind}"
+    override val message: String = s"Invalid type declaration: ${token.kind}(${token.value})"
   }
 }

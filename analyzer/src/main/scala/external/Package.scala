@@ -19,6 +19,6 @@ object Package {
   case class Struct(
                      name: String,
                      directive: Directive,
-                     fields: List[Type]
+                     fields: Map[String, Type]
                    ) extends Package
 }

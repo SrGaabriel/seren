@@ -28,7 +28,7 @@ class ModuleManager(val directive: Directive) {
   
   def addStruct(
                  name: String,
-                 fields: List[Type]
+                 fields: Map[String, Type]
                ): Unit = {
     importPackage(
       Package.Struct(
@@ -44,6 +44,14 @@ class ModuleManager(val directive: Directive) {
       case function: Package.Function
         if function.name == name 
       => function
+    }
+  }
+
+  def searchStruct(name: String): Option[Package.Struct] = {
+    packages.collectFirst {
+      case struct: Package.Struct
+        if struct.name == name 
+      => struct
     }
   }
 }

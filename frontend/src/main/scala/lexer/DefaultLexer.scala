@@ -33,10 +33,13 @@ class DefaultLexer extends Lexer {
         case ',' => addToken(",", TokenKind.Comma)
 //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
-          if (input(position + 1) == '=') {
-            addToken(":=", TokenKind.Assign)
-          } else {
-            addToken(":", TokenKind.TypeDeclaration)
+          input(position + 1) match {
+            case ':' =>
+              addToken("::", TokenKind.TypeDeclaration)
+            case '=' =>
+              addToken(":=", TokenKind.Assign)
+            case _ =>
+              return Left(LexicalError.UnexpectedCharacterError(currentChar, position))
           }
         case '.' if input.drop(position).startsWith("...") =>
           addToken("...", TokenKind.Vararg)

@@ -334,6 +334,7 @@ class DefaultParser extends Parser {
             case TokenKind.StringLiteral => Right(Type.String)
             case TokenKind.This => Right(Type.UnknownThis)
             case TokenKind.AnyType => Right(Type.Any)
+            case TokenKind.Identifier => Right(Type.UnknownIdentifier(token.value))
             case _ => Left(InvalidTypeDeclarationError(token))
         }
         if (stream.peek.kind == TokenKind.Vararg) {
