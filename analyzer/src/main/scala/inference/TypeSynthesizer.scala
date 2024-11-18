@@ -73,7 +73,7 @@ object TypeSynthesizer {
           case _ => actualType
         }
       case TypeFunction(from, to) =>
-        lazyTypeToType(module, block, to)
+        Type.Function(from.map(t => lazyTypeToType(module, block, t)), lazyTypeToType(module, block, to))
       case TypeAccess(structType, field) =>
         val struct = lazyTypeToType(module, block, structType)
         struct match {

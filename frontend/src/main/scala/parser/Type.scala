@@ -16,6 +16,7 @@ enum Type:
   case Struct(name: String, fields: Map[String, Type])
   case CType(name: String)
   case Vararg(base: Type)
+  case Function(params: List[Type], returnType: Type)
   case Unknown
   case UnknownThis
   case UnknownIdentifier(name: String)

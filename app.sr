@@ -1,7 +1,7 @@
 struct Vector(x :: int32, y :: int32)
 
-def get_x(vector :: Vector) :: int32 {
-    ret vector.x
+def get_x(vector :: Vector) :: Vector {
+    ret vector
 }
 
 def main() :: int32 {

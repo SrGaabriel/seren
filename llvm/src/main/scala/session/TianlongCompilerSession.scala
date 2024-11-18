@@ -51,7 +51,7 @@ class TianlongCompilerSession(
         node = function,
         name = s"${node.name}_${function.name}",
         parameters = function.parameters,
-        returnType = function.returnType,
+        returnType = function.nodeType.returnType,
         modifiers = function.modifiers
       )
     }
@@ -62,7 +62,7 @@ class TianlongCompilerSession(
       case FunctionModifier.External(externalModule) =>
         module.dependencies += Dependency.Function(
           name = node.name,
-          returnType = node.returnType.referenceDragon,
+          returnType = node.nodeType.returnType.referenceDragon,
           parameters = node.parameters.map(_.nodeType.referenceDragon),
         )
         return
@@ -74,7 +74,7 @@ class TianlongCompilerSession(
       node = node,
       name = node.name,
       parameters = node.parameters,
-      returnType = node.returnType,
+      returnType = node.nodeType.returnType,
       modifiers = node.modifiers
     )
   }

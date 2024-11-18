@@ -3,6 +3,7 @@ package inference
 
 import external.ModuleManager
 
+import me.gabriel.seren.analyzer.inference
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.{StructDeclarationNode, *}
 
@@ -20,7 +21,7 @@ class DefaultTypeInference extends TypeInference {
         module.addLocalFunction(
           name = function.name,
           params = function.parameters.map(p => p.nodeType),
-          returnType = function.returnType
+          returnType = function.nodeType.returnType
         )
         block.createChild(function)
       case struct: StructDeclarationNode =>
@@ -48,6 +49,12 @@ class DefaultTypeInference extends TypeInference {
                                  node: TypedSyntaxTreeNode
                                ): LazyType = {
     node match {
+      case functionNode: FunctionDeclarationNode =>
+        block.lazyDefine(functionNode, TypeFunction(
+          functionNode.parameters.map(p => processTypedNode(block, p)),
+          TypeLiteral(functionNode.nodeType.returnType)
+        ))
+
       case referenceNode: ReferenceNode =>
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
 

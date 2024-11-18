@@ -78,14 +78,18 @@ case class StringLiteralNode(token: Token) extends TypedSyntaxTreeNode {
 class FunctionDeclarationNode(
                                     val token: Token,
                                     val name: String,
-                                    var returnType: Type,
+                                    var nodeType: Type.Function,
                                     val parameters: List[FunctionParameterNode],
                                     val modifiers: Set[FunctionModifier],
                                     val block: BlockNode
-                                  ) extends SyntaxTreeNode {
+                                  ) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = parameters :+ block
+  
+  def nodeType_$eq(nodeType: Type): Unit = {
+    this.nodeType = nodeType.asInstanceOf[Type.Function]
+  }
 
-  override def toString: String = s"FunctionDeclarationNode($name, $parameters, $returnType)"
+  override def toString: String = s"FunctionDeclarationNode($name, $parameters, ${nodeType.returnType})"
 }
 
 case class FunctionParameterNode(token: Token, name: String, var nodeType: Type) extends TypedSyntaxTreeNode {

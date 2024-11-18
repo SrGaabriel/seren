@@ -80,7 +80,7 @@ class DefaultParser extends Parser {
                 Right(BlockNode(fnToken, List.empty))
             else
                 parseBlock(stream)
-        } yield FunctionDeclarationNode(fnToken, nameToken.value, returnType, parameters, modifiers, body)
+        } yield FunctionDeclarationNode(fnToken, nameToken.value, Type.Function(parameters.map(_.nodeType), returnType), parameters, modifiers, body)
     }
 
     private def parseFunctionParameter(stream: TokenStream, isC: Boolean=false): Either[ParsingError, FunctionParameterNode] = {
