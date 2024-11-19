@@ -8,7 +8,7 @@ import me.gabriel.tianlong.transcriber.{DragonIrTranscriber, TianlongIrTranscrib
 
 class SerenDragonCompiler {
   val transcriber: DragonIrTranscriber = TianlongIrTranscriber()
-  
+
   def compile(
                tree: SyntaxTree,
                typeEnvironment: TypeEnvironment

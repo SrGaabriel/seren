@@ -1,7 +1,7 @@
 package me.gabriel.seren.llvm
 package session
 
-import `type`.referenceDragon
+import `type`.{allocationDragon, referenceDragon}
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
@@ -138,6 +138,7 @@ class TianlongCompilerSession(
       case string: StringLiteralNode => generateString(factory, string)
       case binaryOp: BinaryOperationNode => generateBinaryOp(factory, binaryOp)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
+      case instantiation: StructInstantiationNode => generateStructInstantiation(block, function, factory, instantiation)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case _ =>
         println(s"Unknown value: $node")
@@ -167,6 +168,9 @@ class TianlongCompilerSession(
         val memory = factory.nextMemoryReference(node.nodeType.referenceDragon)
         insertMemory(block, node.name, memory)
         Some(factory.assignStatement(memory, statement, constantOverride = None))
+      case memory: MemoryReference =>
+        insertMemory(block, node.name, memory)
+        None
       case _ => None
     }
   }
@@ -241,6 +245,33 @@ class TianlongCompilerSession(
     )
     
     Some(factory.assignAndLoadIfImmutable(element).getOrElse(element))
+  }
+
+  def generateStructInstantiation(
+                             block: SymbolBlock,
+                             function: FunctionDeclarationNode,
+                             factory: FunctionFactory,
+                             node: StructInstantiationNode
+                           ): Option[MemoryReference] = {
+    val structType = node.nodeType.allocationDragon
+    val allocation = factory.assign(factory.allocate(
+      allocationType = structType,
+      alignment = structType.bytes
+    ))
+    val values = node.arguments.map(arg => generateValue(
+      block = block,
+      function = function,
+      factory = factory,
+      node = arg
+    ).get)
+
+    val struct = ConstantReference.Struct(
+      fields = values,
+      dragonType = structType.asInstanceOf[DragonType.Struct]
+    )
+    factory.store(struct, allocation)
+
+    Some(allocation)
   }
 
   def generateNumberValue(

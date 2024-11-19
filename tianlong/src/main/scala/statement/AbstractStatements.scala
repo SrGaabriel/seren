@@ -15,5 +15,5 @@ trait TypedDragonStatement extends DragonStatement, ValueReference {
 
   override val dragonType: DragonType = statementType
 
-  override def llvm: String = s"($statementLlvm)"
+  override def llvm: String = statementLlvm
 }

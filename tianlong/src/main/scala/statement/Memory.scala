@@ -22,7 +22,7 @@ case class StoreStatement(
 
   override def valid: Boolean = pointer.dragonType.isPointer
 
-  override def statementLlvm: String = s"store ${value.dragonType.llvm} ${value.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
+  override def statementLlvm: String = s"store ${value.dragonType.llvm} ${value.llvm}, ${pointer.dragonType.llvm} ${pointer.llvm}"
 }
 
 case class BulkStoreStatement(

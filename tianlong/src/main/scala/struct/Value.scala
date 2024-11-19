@@ -29,6 +29,13 @@ object ConstantReference {
                    ) extends ConstantReference(dragonType) {
     override def llvm: String = number
   }
+  
+  case class Struct(
+                     fields: List[ValueReference],
+                     override val dragonType: DragonType.Struct
+                   ) extends ConstantReference(dragonType) {
+    override def llvm: String = s"{ ${fields.map(f => s"${f.dragonType.llvm} ${f.llvm}").mkString(", ")} }"
+  }
 
   case class SmartString(
                           text: String,

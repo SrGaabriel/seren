@@ -1,15 +1,14 @@
-struct Vector(x :: int32, y :: int32)
+struct Vector(x :: int32, y :: int32, )
 
-def get_x(vector :: Vector) :: Vector {
-    ret vector
+def get_x(vector :: Vector) :: int32 {
+    ret vector.x
 }
 
 def main() :: int32 {
     b := 5
-
-    printf("Hello, World!")
-    printf("What's up? %d", test())
-    printf("Hello, World!")
+    vector := %Vector(5, 0)
+    x := get_x(vector)
+    printf("X: %d", x)
     ret 0
 }
 

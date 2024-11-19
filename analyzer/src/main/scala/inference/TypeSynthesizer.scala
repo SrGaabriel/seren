@@ -44,7 +44,7 @@ object TypeSynthesizer {
           typedNode.nodeType = Type.Int
           return
         } else if (finalType == Type.Unknown) {
-          throw new RuntimeException(s"Could not resolve type for node $node")
+          throw new RuntimeException(s"Could not resolve type for node $node ($inferredLazyType)")
         }
 
         typedNode.nodeType = finalType

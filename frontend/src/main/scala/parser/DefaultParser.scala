@@ -218,6 +218,7 @@ class DefaultParser extends Parser {
         peek.kind match {
             case TokenKind.NumberLiteral => parseNumberLiteral(stream)
             case TokenKind.StringLiteral => parseString(stream)
+            case TokenKind.Modulo => parseInstantiation(stream)
             case TokenKind.Identifier | TokenKind.This => parseIdentifierExpression(stream)
             case _ => Left(UnexpectedTokenError(peek))
         }
@@ -238,6 +239,15 @@ class DefaultParser extends Parser {
             _ <- consumeToken(stream, TokenKind.Assign)
             expression <- parseExpression(stream)
         } yield AssignmentNode(identifierToken, identifierToken.value, expression)
+    }
+    
+    private def parseInstantiation(stream: TokenStream): Either[ParsingError, StructInstantiationNode] = {
+        for {
+            instantiationToken <- consumeToken(stream, TokenKind.Modulo)
+            structNameToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.LeftParenthesis)
+            arguments <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseExpression)
+        } yield StructInstantiationNode(instantiationToken, structNameToken.value, Type.UnknownIdentifier(structNameToken.value), arguments)
     }
     
     private def parseBlock(stream: TokenStream): Either[ParsingError, BlockNode] = {

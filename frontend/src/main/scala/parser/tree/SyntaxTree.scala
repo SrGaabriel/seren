@@ -159,3 +159,14 @@ class StructFieldAccessNode(
 
   override def toString: String = s"StructFieldAccessNode($token, $struct, $fieldName)"
 }
+
+class StructInstantiationNode(
+                                val token: Token,
+                                val structName: String,
+                                var nodeType: Type,
+                                val arguments: List[TypedSyntaxTreeNode],
+                             ) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = arguments
+
+  override def toString: String = s"StructInstantiationNode($structName, $arguments)"
+}

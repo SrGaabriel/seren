@@ -31,6 +31,7 @@ class DefaultLexer extends Lexer {
         case '<' => addToken("<", TokenKind.LeftAngleBracket)
         case '>' => addToken(">", TokenKind.RightAngleBracket)
         case ',' => addToken(",", TokenKind.Comma)
+        case '%' => addToken("%", TokenKind.Modulo)
 //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
           input(position + 1) match {

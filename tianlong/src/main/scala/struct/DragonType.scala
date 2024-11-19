@@ -35,9 +35,10 @@ object DragonType {
 
   case class Struct(
                       name: String,
+                      alignment: Int,
                     ) extends DragonType(
                       llvm = s"%$name",
-                      bytes = -1
+                      bytes = alignment
                    )
 
   case object StaticPointer extends DragonType("ptr", bytes = 1)
