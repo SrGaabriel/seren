@@ -340,7 +340,10 @@ class DefaultParser extends Parser {
         }
         val base = token.kind match {
             case TokenKind.VoidType => Right(Type.Void)
+            case TokenKind.Int8Type => Right(Type.Byte)
+            case TokenKind.Int16Type => Right(Type.Short)
             case TokenKind.Int32Type => Right(Type.Int)
+            case TokenKind.Int64Type => Right(Type.Long)
             case TokenKind.StringLiteral => Right(Type.String)
             case TokenKind.This => Right(Type.UnknownThis)
             case TokenKind.AnyType => Right(Type.Any)

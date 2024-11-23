@@ -9,6 +9,7 @@ import me.gabriel.seren.frontend.parser.tree.*
 import me.gabriel.seren.frontend.struct.BinaryOp
 import me.gabriel.seren.frontend.struct.FunctionModifier
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
+import me.gabriel.seren.llvm.util.PaddingSorter
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*
@@ -41,7 +42,7 @@ class TianlongCompilerSession(
   }
   
   def generateStructDeclaration(node: StructDeclarationNode): Unit = {
-    module.createStruct(node.name, node.fields.map(_.nodeType.referenceDragon))
+    module.createStruct(node.name, PaddingSorter.sortTypes(node.fields.map(_.nodeType.referenceDragon)))
     
     val block = typeEnvironment.root.surfaceSearchChild(node).get
     

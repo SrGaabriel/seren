@@ -8,7 +8,10 @@ import me.gabriel.tianlong.struct.DragonType
 
 extension (serenType: Type) {
   def allocationDragon: DragonType = serenType match {
+    case Type.Byte => DragonType.Int8
+    case Type.Short => DragonType.Int16
     case Type.Int => DragonType.Int32
+    case Type.Long => DragonType.Int64
     case Type.Void => DragonType.Void
     case Type.String => DragonType.Array(DragonType.Int8, 0)
     case Type.CType(name) => DragonType.Custom(name)

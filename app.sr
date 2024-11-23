@@ -1,4 +1,4 @@
-struct Vector(x :: int32, y :: int32, )
+struct Vector(x :: int32, y :: int32, z :: int16, w :: int32, a :: int8, b :: int16, l :: int16)
 
 def get_x(vector :: Vector) :: int32 {
     ret vector.x
@@ -6,9 +6,14 @@ def get_x(vector :: Vector) :: int32 {
 
 def main() :: int32 {
     b := 5
-    vector := %Vector(5, 0)
-    x := get_x(vector)
-    printf("X: %d", x)
+    vector := %Vector(20, 19, 18, 17, 16, 15, 14)
+    printf("X: %d", vector.x)
+    printf("Y: %d", vector.y)
+    printf("Z: %d", vector.z)
+    printf("W: %d", vector.w)
+    printf("A: %d", vector.a)
+    printf("B: %d", vector.b)
+    printf("L: %d", vector.l)
     ret 0
 }
 
