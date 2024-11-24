@@ -65,7 +65,7 @@ case class LoadStatement(
   }
   override val dragonType: DragonType = statementType
 
-  override def statementLlvm: String = s"load ${statementType.llvm}, ${pointer.dragonType.llvm}* ${pointer.llvm}"
+  override def statementLlvm: String = s"load ${statementType.llvm}, ${pointer.dragonType.llvm} ${pointer.llvm}"
 }
 
 case class GetElementPointerStatement(

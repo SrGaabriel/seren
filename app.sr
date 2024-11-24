@@ -1,11 +1,6 @@
 struct Vector(x :: int32, y :: int32, z :: int16, w :: int32, a :: int8, b :: int16, l :: int16)
 
-def get_x(vector :: Vector) :: int32 {
-    ret vector.x
-}
-
 def main() :: int32 {
-    b := 5
     vector := %Vector(20, 19, 18i16, 17i32, 16i8, 15i16, 14i16)
     printf("X: %d", vector.x)
     printf("Y: %d", vector.y)
@@ -15,14 +10,6 @@ def main() :: int32 {
     printf("B: %d", vector.b)
     printf("L: %d", vector.l)
     ret 0
-}
-
-def print_line(text :: string) {
-    printf(text)
-}
-
-def test() :: int32 {
-    ret 6
 }
 
 external<C> def printf(i8*, ...)
