@@ -2,6 +2,7 @@ package me.gabriel.seren.frontend
 package lexer
 
 import error.LexicalError
+import parser.Type
 import struct.{Token, TokenKind}
 
 class DefaultLexer extends Lexer {
@@ -49,10 +50,19 @@ class DefaultLexer extends Lexer {
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
           addToken(string, TokenKind.StringLiteral)
-          position += 2 // For the quotes
+          position += 2
         case _ if currentChar.isDigit =>
           val number = input.drop(position).takeWhile(_.isDigit)
-          addToken(number, TokenKind.NumberLiteral)
+          val (numericType, extraPositions) = input.drop(position + number.length) match {
+            case e if e.startsWith("i64") => (Some(Type.Long), 3)
+            case e if e.startsWith("i32") => (Some(Type.Int), 3)
+            case e if e.startsWith("i16") => (Some(Type.Short), 3)
+            case e if e.startsWith("i8") => (Some(Type.Byte), 2)
+            case _ => (None, 0)
+          }
+
+          addToken(number, TokenKind.NumberLiteral(numericType))
+          position += extraPositions
         case _ if currentChar.isLetter || currentChar == '_' =>
           val identifier = input.drop(position).takeWhile(c => c.isLetterOrDigit || c == '_')
           val tokenKind = identifier match {

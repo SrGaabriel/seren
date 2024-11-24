@@ -1,11 +1,13 @@
 package me.gabriel.seren.frontend
 package struct
 
+import parser.Type
+
 case class Token(value: String, kind: TokenKind)
 
 enum TokenKind:
   case BOF
-  case NumberLiteral
+  case NumberLiteral(suffixType: Option[Type])
   case Plus
   case Minus
   case NewLine

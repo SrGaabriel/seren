@@ -7,10 +7,9 @@ import me.gabriel.seren.analyzer.inference
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.{StructDeclarationNode, *}
 
-class DefaultTypeInference extends TypeInference {
-  private var typeVarCounter = 0
-  private def newTypeVar(): LazyType = TypeVariable(s"t${typeVarCounter += 1; typeVarCounter}")
+import scala.collection.mutable
 
+class HardTypeInference extends TypeInference {
   override def traverseBottomUp(
                                  module: ModuleManager,
                                  block: LazySymbolBlock,
@@ -25,9 +24,10 @@ class DefaultTypeInference extends TypeInference {
         )
         block.createChild(function)
       case struct: StructDeclarationNode =>
+        val fields = scala.collection.immutable.ListMap(struct.fields.map(f => f.name -> f.nodeType).to(mutable.LinkedHashMap).toSeq: _*)
         module.addStruct(
           name = struct.name,
-          fields = struct.fields.map(f => f.name -> f.nodeType).toMap
+          fields = fields
         )
         block.createChild(struct)
       case _ => block

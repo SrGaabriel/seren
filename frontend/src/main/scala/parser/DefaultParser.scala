@@ -216,7 +216,7 @@ class DefaultParser extends Parser {
     private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
         val peek = stream.peek
         peek.kind match {
-            case TokenKind.NumberLiteral => parseNumberLiteral(stream)
+            case TokenKind.NumberLiteral(_) => parseNumberLiteral(stream)
             case TokenKind.StringLiteral => parseString(stream)
             case TokenKind.Modulo => parseInstantiation(stream)
             case TokenKind.Identifier | TokenKind.This => parseIdentifierExpression(stream)
@@ -226,7 +226,7 @@ class DefaultParser extends Parser {
 
     private def parseNumberLiteral(stream: TokenStream): Either[ParsingError, NumericNode] = {
         val token = stream.next
-        Right(NumericNode(token, Type.Int))
+        Right(NumericNode(token, token.kind.asInstanceOf[TokenKind.NumberLiteral].suffixType.getOrElse(Type.Int)))
     }
 
     private def parseString(stream: TokenStream): Either[ParsingError, StringLiteralNode] = {

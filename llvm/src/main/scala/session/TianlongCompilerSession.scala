@@ -9,7 +9,7 @@ import me.gabriel.seren.frontend.parser.tree.*
 import me.gabriel.seren.frontend.struct.BinaryOp
 import me.gabriel.seren.frontend.struct.FunctionModifier
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
-import me.gabriel.seren.llvm.util.PaddingSorter
+import util.PaddingSorter
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*
@@ -238,7 +238,9 @@ class TianlongCompilerSession(
       factory = factory,
       node = node.struct
     ).get
-    val indexOfField = node.struct.nodeType.asInstanceOf[Type.Struct].fields.keySet.toList.indexOf(node.fieldName)
+    val structType = node.struct.nodeType.asInstanceOf[Type.Struct]
+    val sortedFields = structType.fields.toList.sortBy(-_._2.referenceDragon.bytes).map(_._1)
+    val indexOfField = sortedFields.indexOf(node.fieldName)
     val element = factory.getElementAt(
       struct = struct,
       elementType = node.nodeType.referenceDragon,
@@ -267,7 +269,7 @@ class TianlongCompilerSession(
     ).get)
 
     val struct = ConstantReference.Struct(
-      fields = values,
+      fields = values.sortBy(-_.dragonType.bytes),
       dragonType = structType.asInstanceOf[DragonType.Struct]
     )
     factory.store(struct, allocation)

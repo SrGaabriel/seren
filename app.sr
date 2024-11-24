@@ -6,7 +6,7 @@ def get_x(vector :: Vector) :: int32 {
 
 def main() :: int32 {
     b := 5
-    vector := %Vector(20, 19, 18, 17, 16, 15, 14)
+    vector := %Vector(20, 19, 18i16, 17i32, 16i8, 15i16, 14i16)
     printf("X: %d", vector.x)
     printf("Y: %d", vector.y)
     printf("Z: %d", vector.z)

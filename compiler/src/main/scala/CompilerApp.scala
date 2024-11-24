@@ -6,7 +6,7 @@ import me.gabriel.seren.analyzer.TypeEnvironment
 import me.gabriel.seren.analyzer.external.{Directive, ModuleManager}
 import me.gabriel.seren.analyzer.impl.DefaultSemanticAnalysisManager
 import me.gabriel.seren.analyzer.inference.LazySymbolBlock.toLazySymbolBlock
-import me.gabriel.seren.analyzer.inference.{DefaultTypeInference, LazySymbolBlock, TypeSynthesizer}
+import me.gabriel.seren.analyzer.inference.{HardTypeInference, LazySymbolBlock, TypeSynthesizer}
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
 import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
 import me.gabriel.seren.frontend.struct.TokenStream
@@ -45,7 +45,7 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   val tree = syntaxTree.right.get
   val root = tree.root
   val typeEnvironment = new TypeEnvironment("main", root)
-  val typeInference = new DefaultTypeInference
+  val typeInference = new HardTypeInference
   val lazyTypeRoot: LazySymbolBlock = typeEnvironment.root
 
   typeInference.traverseBottomUp(moduleManager, lazyTypeRoot, root)
