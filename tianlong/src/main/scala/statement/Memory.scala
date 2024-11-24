@@ -102,3 +102,17 @@ case class GetElementPointerStatement(
       s"${if (total) ", i32 0" else ""}" +
       s", ${index.dragonType.llvm} ${index.llvm})"
 }
+
+case class InsertValueStatement(
+                                  struct: ValueReference,
+                                  value: ValueReference,
+                                  index: Int
+                               ) extends TypedDragonStatement {
+  override val memoryDependencies: List[ValueReference] = List(struct, value)
+  
+  override def valid: Boolean = true
+  
+  override val statementType: DragonType = struct.dragonType
+  
+  override def statementLlvm: String = s"insertvalue ${struct.dragonType.llvm} ${struct.llvm}, ${value.dragonType.llvm} ${value.llvm}, $index"
+}

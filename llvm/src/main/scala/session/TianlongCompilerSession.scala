@@ -269,12 +269,22 @@ class TianlongCompilerSession(
       node = arg
     ).get)
 
-    val struct = ConstantReference.Struct(
-      fields = values.sortBy(-_.dragonType.bytes),
-      dragonType = structType.asInstanceOf[DragonType.Struct]
-    )
-    factory.store(struct, allocation)
-
+    if (values.exists(_.isInstanceOf[MemoryReference])) {
+      values.zipWithIndex.foreach { case (value, index) =>
+        val element = factory.assign(factory.getElementAt(
+          struct = allocation,
+          elementType = values(index).dragonType,
+          index = ConstantReference.Number(index.toString, Int32)
+        ))
+        factory.store(value, element)
+      }
+    } else {
+      val struct = ConstantReference.Struct(
+        fields = values.sortBy(-_.dragonType.bytes),
+        dragonType = structType.asInstanceOf[DragonType.Struct]
+      )
+      factory.store(struct, allocation)
+    }
     Some(allocation)
   }
 
@@ -335,7 +345,6 @@ class TianlongCompilerSession(
       name = s"str_${node.hashCode.toString}",
       value = convertControlChars(node.token.value)
     )
-    
     Some(format)
   }
 

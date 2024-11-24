@@ -108,6 +108,14 @@ class FunctionFactory(
     bulkStore(constants, allocated)
     allocated
   }
+  
+  def insertValue(
+                   struct: ValueReference,
+                   value: ValueReference,
+                   index: Int
+                 ): InsertValueStatement = {
+    InsertValueStatement(struct, value, index)
+  }
 
   def `return`(value: ValueReference): FunctionFactory = {
     statement(ReturnStatement(value))
