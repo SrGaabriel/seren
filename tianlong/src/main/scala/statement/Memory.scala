@@ -94,4 +94,11 @@ case class GetElementPointerStatement(
       s" ${originalType.llvm}, ${pointerType.llvm} ${struct.llvm}" +
       s"${if (total) ", i32 0" else ""}" +
       s", ${index.dragonType.llvm} ${index.llvm}"
+
+  override def llvm: String =
+    s"getelementptr" +
+      s"${if (inBounds) " inbounds" else ""}" +
+      s" (${originalType.llvm}, ${pointerType.llvm} ${struct.llvm}" +
+      s"${if (total) ", i32 0" else ""}" +
+      s", ${index.dragonType.llvm} ${index.llvm})"
 }

@@ -60,17 +60,11 @@ class FunctionFactory(
   }
 
   def useFormat(
-              name: String,
-              value: String,
-            ): GetElementPointerStatement = {
+                 name: String,
+                 value: String,
+               ): BitcastStatement = {
     val format = module.format(name, value)
-    getElementAt(
-      format,
-      Int8,
-      ConstantReference.Number("0", DragonType.Int32),
-      total = false,
-      inBounds = false
-    )
+    bitcast(format, DragonType.ContextualPointer(format.dragonType), DragonType.ContextualPointer(Int8))
   }
 
   def assign(typedStatement: TypedDragonStatement, constantOverride: Option[Boolean] = None): MemoryReference = {
@@ -88,6 +82,14 @@ class FunctionFactory(
     })
 
     AssignStatement(reference, typedStatement)
+  }
+
+  def bitcast(
+                value: ValueReference,
+                fromType: DragonType,
+                targetType: DragonType
+             ): BitcastStatement = {
+    BitcastStatement(value, fromType, targetType)
   }
 
   def getElementAt(

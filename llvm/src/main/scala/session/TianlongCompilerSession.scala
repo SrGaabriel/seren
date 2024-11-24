@@ -2,6 +2,7 @@ package me.gabriel.seren.llvm
 package session
 
 import `type`.{allocationDragon, referenceDragon}
+import util.convertControlChars
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
@@ -329,10 +330,10 @@ class TianlongCompilerSession(
   def generateString(
                       factory: FunctionFactory,
                       node: StringLiteralNode
-                    ): Option[GetElementPointerStatement] = {
+                    ): Option[BitcastStatement] = {
     val format = factory.useFormat(
       name = s"str_${node.hashCode.toString}",
-      value = node.token.value
+      value = convertControlChars(node.token.value)
     )
     
     Some(format)
