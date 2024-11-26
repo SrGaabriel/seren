@@ -1,11 +1,9 @@
 package me.gabriel.seren.analyzer
 package inference
 
-import me.gabriel.seren.analyzer.external.ModuleManager
-import me.gabriel.seren.frontend.parser.tree.{SyntaxTreeNode, TypedSyntaxTreeNode}
+import external.ModuleManager
 
-type Substitution = Map[LazyType, LazyType]
-type Constraint = (LazyType, LazyType)
+import me.gabriel.seren.frontend.parser.tree.{SyntaxTreeNode, TypedSyntaxTreeNode}
 
 trait TypeInference {
   def traverseBottomUp(

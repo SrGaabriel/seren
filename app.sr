@@ -1,3 +1,5 @@
+enum Option: Some(int32) | None
+
 struct Vector(x :: int32, y :: int32, z :: int16, w :: int32, a :: int8, b :: int16, l :: int16, planet :: string)
 
 def main() :: int32 {

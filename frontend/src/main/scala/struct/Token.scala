@@ -16,14 +16,17 @@ enum TokenKind:
   case SemiColon
   case Function
   case Struct
+  case Enum
   case This
   case Identifier
   case Return
   case Multiply
   case Vararg
   case Divide
+  case Pipe
   case Comma
   case Modulo
+  case Colon
   case Dot
   case LeftBrace
   case Assign

@@ -1,6 +1,7 @@
 package me.gabriel.tianlong
 
 import factory.FunctionFactory
+import struct.LinkageType.LinkOnceODR
 import struct.{ConstantReference, Dependency, DragonType}
 
 class TianlongModule extends DragonModule {
@@ -18,7 +19,7 @@ class TianlongModule extends DragonModule {
             value: String,
             ): Dependency.Constant = {
     val constant = dependencies.find {
-      case Dependency.Constant(_, depValue) => depValue match {
+      case Dependency.Constant(_, depValue, _) => depValue match {
         case ConstantReference.SmartString(depStringValue) => depStringValue == value
         case _ => false
       }
@@ -27,7 +28,7 @@ class TianlongModule extends DragonModule {
     constant match {
       case Some(value) => value
       case None =>
-        val newConstant = Dependency.Constant(name, ConstantReference.SmartString(value))
+        val newConstant = Dependency.Constant(name, ConstantReference.SmartString(value), Some(LinkOnceODR))
         dependencies += newConstant
         newConstant
     }

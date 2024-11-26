@@ -170,3 +170,23 @@ class StructInstantiationNode(
 
   override def toString: String = s"StructInstantiationNode($structName, $arguments)"
 }
+
+class EnumDeclarationNode(
+                           val token: Token,
+                           val name: String,
+                           val variants: List[EnumVariantNode]
+                         ) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = variants
+
+  override def toString: String = s"EnumDeclarationNode($name, $variants)"
+}
+
+class EnumVariantNode(
+                       val token: Token,
+                       val name: String,
+                       val types: List[Type]
+                     ) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+  
+  override def toString: String = s"EnumVariantNode($name, $types)"
+}

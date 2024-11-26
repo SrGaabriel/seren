@@ -32,6 +32,7 @@ class DefaultLexer extends Lexer {
         case '<' => addToken("<", TokenKind.LeftAngleBracket)
         case '>' => addToken(">", TokenKind.RightAngleBracket)
         case ',' => addToken(",", TokenKind.Comma)
+        case '|' => addToken("|", TokenKind.Pipe)
         case '%' => addToken("%", TokenKind.Modulo)
 //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
@@ -41,7 +42,7 @@ class DefaultLexer extends Lexer {
             case '=' =>
               addToken(":=", TokenKind.Assign)
             case _ =>
-              return Left(LexicalError.UnexpectedCharacterError(currentChar, position))
+              addToken(":", TokenKind.Colon)
           }
         case '.' if input.drop(position).startsWith("...") =>
           addToken("...", TokenKind.Vararg)
@@ -77,7 +78,8 @@ class DefaultLexer extends Lexer {
             case "int32" => TokenKind.Int32Type
             case "int64" => TokenKind.Int64Type
             case "struct" => TokenKind.Struct
-            case "string" => TokenKind.StringLiteral
+            case "string" => TokenKind.StringType
+            case "enum" => TokenKind.Enum
             case "external" => TokenKind.External
             case _ => TokenKind.Identifier
           }
@@ -136,6 +138,7 @@ class DefaultLexer extends Lexer {
       TokenKind.Return,
       TokenKind.BOF,
       TokenKind.RightBrace,
+      TokenKind.Pipe,
     )
 
     val followingExclusions: Set[TokenKind] = Set(

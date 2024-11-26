@@ -17,15 +17,15 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
 
   def transcribeDependency(dependency: Dependency): String = {
     dependency match {
-      case Dependency.Constant(name, value) =>
-        s"@$name = unnamed_addr constant ${value.dragonType.llvm} ${value.llvm}"
+      case Dependency.Constant(name, value, linkage) =>
+        s"@$name =${linkage.map(_.llvm).getOrElse("")} unnamed_addr constant ${value.dragonType.llvm} ${value.llvm}"
       case Dependency.Function(name, returnType, parameters) =>
         s"declare ${returnType.llvm} @$name(${parameters.map(_.llvm).mkString(", ")})"
       case Dependency.Struct(name, fields) =>
         s"%$name = type { ${fields.map(_.llvm).mkString(", ")} }"
     }
   }
-
+  
   def transcribeFunction(function: DragonFunction): String = {
     val sb = new StringBuilder
     sb.append(s"define ${function.returnType.llvm} @${function.name}(")

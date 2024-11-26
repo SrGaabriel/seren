@@ -34,14 +34,16 @@ class TianlongCompilerSession(
 
   def generateTopLevelNode(node: SyntaxTreeNode): Unit = {
     node match {
-      case declaration: FunctionDeclarationNode =>
-        generateTopLevelFunction(declaration)
-      case declaration: StructDeclarationNode =>
-        generateStructDeclaration(declaration)
+      case function: FunctionDeclarationNode =>
+        generateTopLevelFunction(function)
+      case struct: StructDeclarationNode =>
+        generateStructDeclaration(struct)
+      case enumeration: EnumDeclarationNode =>
+        generateEnumDeclaration(enumeration)
       case _ =>
     }
   }
-  
+
   def generateStructDeclaration(node: StructDeclarationNode): Unit = {
     module.createStruct(node.name, PaddingSorter.sortTypes(node.fields.map(_.nodeType.referenceDragon)))
     
@@ -57,6 +59,13 @@ class TianlongCompilerSession(
         modifiers = function.modifiers
       )
     }
+  }
+
+  def generateEnumDeclaration(node: EnumDeclarationNode): Unit = {
+    module.createStruct("enum_" + node.name, List(
+      DragonType.Int8,
+      DragonType.StaticPointer
+    ))
   }
 
   def generateTopLevelFunction(node: FunctionDeclarationNode): Unit = {
@@ -267,7 +276,7 @@ class TianlongCompilerSession(
       function = function,
       factory = factory,
       node = arg
-    ).get)
+    ).get).sortBy(-_.dragonType.bytes)
 
     if (values.exists(_.isInstanceOf[MemoryReference])) {
       values.zipWithIndex.foreach { case (value, index) =>
@@ -280,7 +289,7 @@ class TianlongCompilerSession(
       }
     } else {
       val struct = ConstantReference.Struct(
-        fields = values.sortBy(-_.dragonType.bytes),
+        fields = values,
         dragonType = structType.asInstanceOf[DragonType.Struct]
       )
       factory.store(struct, allocation)

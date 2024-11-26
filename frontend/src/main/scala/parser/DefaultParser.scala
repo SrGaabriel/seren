@@ -11,7 +11,7 @@ import scala.annotation.tailrec
 class DefaultParser extends Parser {
     def parse(stream: TokenStream): Either[ParsingError, SyntaxTree] = {
         val bof = stream.next
-        val topLevelDeclarations = parseExhaustiveSequence(stream, TokenKind.EOF, parseTopLevelDeclaration)
+        val topLevelDeclarations = parseFluidSequence(stream, TokenKind.EOF, parseTopLevelDeclaration)
         topLevelDeclarations match {
             case Left(error) => Left(error)
             case Right(declarations) => Right(SyntaxTree(RootNode(bof, declarations)))
@@ -23,6 +23,7 @@ class DefaultParser extends Parser {
         val peek = stream.peek
         peek.kind match {
             case TokenKind.NewLine => consumeToken(stream, TokenKind.NewLine); parseTopLevelDeclaration(stream)
+            case TokenKind.Enum => parseEnum(stream)
             // todo: improve this
             case TokenKind.External =>
                 for {
@@ -46,7 +47,7 @@ class DefaultParser extends Parser {
             fields <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseStructField)
             functions <- consumeToken(stream, TokenKind.LeftBrace) match {
                 case Left(_) => Right(List.empty)
-                case Right(_) => parseExhaustiveSequence(stream, TokenKind.RightBrace, s => parseFunctionDeclaration(s, Set.empty))
+                case Right(_) => parseFluidSequence(stream, TokenKind.RightBrace, s => parseFunctionDeclaration(s, Set.empty))
             }
         } yield StructDeclarationNode(structToken, nameToken.value, fields, functions)
     }
@@ -140,6 +141,7 @@ class DefaultParser extends Parser {
                 ReferenceNode(identifier, identifier.value, identifier.kind match {
                     case TokenKind.Identifier => Type.Unknown
                     case TokenKind.This => Type.UnknownThis
+                    case _ => return Left(UnexpectedTokenError(identifier))
                 })
             )
         }
@@ -249,7 +251,26 @@ class DefaultParser extends Parser {
             arguments <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseExpression)
         } yield StructInstantiationNode(instantiationToken, structNameToken.value, Type.UnknownIdentifier(structNameToken.value), arguments)
     }
-    
+
+    private def parseEnum(stream: TokenStream): Either[ParsingError, EnumDeclarationNode] = {
+        for {
+            enumToken <- consumeToken(stream, TokenKind.Enum)
+            nameToken <- consumeToken(stream, TokenKind.Identifier)
+            _ <- consumeToken(stream, TokenKind.Colon)
+            variants <- parseExhaustiveSequence(stream, TokenKind.Pipe, parseEnumVariant)
+        } yield EnumDeclarationNode(enumToken, nameToken.value, variants)
+    }
+
+    private def parseEnumVariant(stream: TokenStream): Either[ParsingError, EnumVariantNode] = {
+        for {
+            nameToken <- consumeToken(stream, TokenKind.Identifier)
+            types <- consumeToken(stream, TokenKind.LeftParenthesis) match {
+                case Left(_) => Right(List.empty)
+                case Right(_) => parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, s => parseType(s))
+            }
+        } yield EnumVariantNode(nameToken, nameToken.value, types)
+    }
+
     private def parseBlock(stream: TokenStream): Either[ParsingError, BlockNode] = {
         val openingBrace = consumeToken(stream, TokenKind.LeftBrace)
         val instructions = parseSequence(
@@ -264,7 +285,7 @@ class DefaultParser extends Parser {
         } yield BlockNode(brace, ins)
     }
 
-    private def parseExhaustiveSequence[T <: SyntaxTreeNode](
+    private def parseFluidSequence[T <: SyntaxTreeNode](
                                stream: TokenStream,
                                end: TokenKind,
                                parser: TokenStream => Either[ParsingError, T]
@@ -280,7 +301,29 @@ class DefaultParser extends Parser {
         consumeToken(stream, end).map(_ => nodes.toList)
     }
 
-    private def parseSequence[T <: SyntaxTreeNode](
+    private def parseExhaustiveSequence[T](
+                                            stream: TokenStream,
+                                            delimiter: TokenKind,
+                                            parser: TokenStream => Either[ParsingError, T]
+                                          ): Either[ParsingError, List[T]] = {
+        val elements = collection.mutable.ListBuffer.empty[T]
+        while (stream.peek.kind != TokenKind.EOF) {
+            val element = parser(stream)
+            element match {
+                case Left(error) => return Left(error)
+                case Right(e) => elements += e
+            }
+            val peek = stream.peek
+            if (peek.kind == delimiter) {
+                stream.next
+            } else if (peek.kind != delimiter) {
+                return Right(elements.toList)
+            }
+        }
+        Right(elements.toList)
+    }
+
+    private def parseSequence[T](
                                stream: TokenStream,
                                delimiter: TokenKind,
                                end: TokenKind,
@@ -344,7 +387,7 @@ class DefaultParser extends Parser {
             case TokenKind.Int16Type => Right(Type.Short)
             case TokenKind.Int32Type => Right(Type.Int)
             case TokenKind.Int64Type => Right(Type.Long)
-            case TokenKind.StringLiteral => Right(Type.String)
+            case TokenKind.StringType => Right(Type.String)
             case TokenKind.This => Right(Type.UnknownThis)
             case TokenKind.AnyType => Right(Type.Any)
             case TokenKind.Identifier => Right(Type.UnknownIdentifier(token.value))
