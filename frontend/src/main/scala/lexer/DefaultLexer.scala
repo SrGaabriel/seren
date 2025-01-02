@@ -7,11 +7,11 @@ import struct.{Token, TokenKind}
 
 class DefaultLexer extends Lexer {
   def lex(input: String): Either[LexicalError, List[Token]] = {
-    val tokens = collection.mutable.ListBuffer(Token("", TokenKind.BOF))
+    val tokens = collection.mutable.ListBuffer(Token("", TokenKind.BOF, -1))
     var position = 0
 
     def addToken(value: String, kind: TokenKind): Unit = {
-      tokens += Token(value, kind)
+      tokens += Token(value, kind, position)
       position += value.length
     }
 
@@ -19,8 +19,17 @@ class DefaultLexer extends Lexer {
       val currentChar = input(position)
 
       currentChar match {
-        case ' ' | '\t' | '\r' => position += 1
-        case '\n' => addToken("\n", TokenKind.NewLine)
+        case ' ' | '\t' =>
+          val whitespace = input.drop(position).takeWhile(c => c == ' ' || c == '\t')
+          addToken(whitespace, TokenKind.Whitespace)
+        case '\r' =>
+          if (position + 1 < input.length && input(position + 1) == '\n') {
+            addToken("\r\n", TokenKind.NewLine)
+          } else {
+            addToken("\r", TokenKind.NewLine)
+          }
+        case '\n' =>
+          addToken("\n", TokenKind.NewLine)
         case '+' => addToken("+", TokenKind.Plus)
         case '-' => addToken("-", TokenKind.Minus)
         case '*' => addToken("*", TokenKind.Multiply)
@@ -34,7 +43,7 @@ class DefaultLexer extends Lexer {
         case ',' => addToken(",", TokenKind.Comma)
         case '|' => addToken("|", TokenKind.Pipe)
         case '%' => addToken("%", TokenKind.Modulo)
-//        case ';' => addToken(";", TokenKind.SemiColon)
+        //        case ';' => addToken(";", TokenKind.SemiColon)
         case ':' =>
           input(position + 1) match {
             case ':' =>
@@ -88,7 +97,7 @@ class DefaultLexer extends Lexer {
       }
     }
 
-    tokens += Token("", TokenKind.EOF)
+    tokens += Token("", TokenKind.EOF, position)
     Right(optimizeTokenStream(tokens.toList))
   }
 

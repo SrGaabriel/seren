@@ -1,7 +1,7 @@
 package me.gabriel.seren.analyzer
 
-import me.gabriel.seren.frontend.parser.tree.{RootNode, SyntaxTreeNode}
 import me.gabriel.seren.frontend.parser.Type
+import me.gabriel.seren.frontend.parser.tree.{RootNode, SyntaxTreeNode}
 
 import scala.collection.mutable
 

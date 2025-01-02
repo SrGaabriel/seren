@@ -11,13 +11,13 @@ trait DragonModule {
   val functions: mutable.ListBuffer[DragonFunction] = mutable.ListBuffer()
 
   def addFunction(
-                   name: String,
-                   parameters: List[DragonType],
-                   returnType: DragonType
-                 ): DragonFunction = {
+    name: String,
+    parameters: List[DragonType],
+    returnType: DragonType
+  ): DragonFunction = {
     val function = new DragonFunction(this, name, parameters.zipWithIndex.map((param, index) =>
       MemoryReference(
-        register = index+1,
+        register = index + 1,
         dragonType = param
       )
     ), returnType)

@@ -4,10 +4,10 @@ package statement
 import struct.{DragonType, ValueReference}
 
 class BitcastStatement(
-                        value: ValueReference,
-                        fromType: DragonType,
-                        targetType: DragonType
-                      ) extends TypedDragonStatement {
+  value: ValueReference,
+  fromType: DragonType,
+  targetType: DragonType
+) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List(value)
   override val statementType: DragonType = targetType
 

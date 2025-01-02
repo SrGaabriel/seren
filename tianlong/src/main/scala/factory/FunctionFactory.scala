@@ -4,14 +4,14 @@ package factory
 import function.DragonFunction
 import statement.*
 import struct.DragonType.Int8
-import struct.{BinaryOpType, ConstantReference, DragonType, MemoryReference, ValueReference}
+import struct.*
 
 import scala.collection.mutable
 
 class FunctionFactory(
-                      val module: TianlongModule,
-                      val function: DragonFunction
-                     ) {
+  val module: TianlongModule,
+  val function: DragonFunction
+) {
   val escapees: mutable.Set[MemoryReference] = mutable.Set.empty
   val assignments = mutable.Map.empty[MemoryReference, AssignStatement]
   var currentRegister: Int = function.parameters.size + 1
@@ -25,7 +25,7 @@ class FunctionFactory(
         case memoryReference: MemoryReference => memoryReference
       }
     }
-    
+
     currentRegister += 1
     function.statements += statement
     this
@@ -42,27 +42,27 @@ class FunctionFactory(
   def allocate(allocationType: DragonType, alignment: Int): AllocateStatement = {
     AllocateStatement(allocationType, alignment)
   }
-  
+
   def add(left: ValueReference, right: ValueReference): BinaryOpStatement = {
     binaryOp(left, right, BinaryOpType.Add)
   }
-  
+
   def binaryOp(left: ValueReference, right: ValueReference, op: BinaryOpType): BinaryOpStatement = {
     BinaryOpStatement(left, right, op)
   }
 
   def call(
-            name: String,
-            returnType: DragonType,
-            arguments: List[ValueReference]
-          ): CallStatement = {
+    name: String,
+    returnType: DragonType,
+    arguments: List[ValueReference]
+  ): CallStatement = {
     CallStatement(name, returnType, arguments)
   }
 
   def useFormat(
-                 name: String,
-                 value: String,
-               ): BitcastStatement = {
+    name: String,
+    value: String,
+  ): BitcastStatement = {
     val format = module.format(name, value)
     bitcast(format, DragonType.ContextualPointer(format.dragonType), DragonType.ContextualPointer(Int8))
   }
@@ -85,20 +85,20 @@ class FunctionFactory(
   }
 
   def bitcast(
-                value: ValueReference,
-                fromType: DragonType,
-                targetType: DragonType
-             ): BitcastStatement = {
+    value: ValueReference,
+    fromType: DragonType,
+    targetType: DragonType
+  ): BitcastStatement = {
     BitcastStatement(value, fromType, targetType)
   }
 
   def getElementAt(
-                    struct: ValueReference,
-                    elementType: DragonType,
-                    index: ValueReference,
-                    total: Boolean = true,
-                    inBounds: Boolean = true
-                  ): GetElementPointerStatement =
+    struct: ValueReference,
+    elementType: DragonType,
+    index: ValueReference,
+    total: Boolean = true,
+    inBounds: Boolean = true
+  ): GetElementPointerStatement =
     GetElementPointerStatement(struct, elementType, index, total, inBounds)
 
   def newString(text: String): MemoryReference = {
@@ -108,12 +108,12 @@ class FunctionFactory(
     bulkStore(constants, allocated)
     allocated
   }
-  
+
   def insertValue(
-                   struct: ValueReference,
-                   value: ValueReference,
-                   index: Int
-                 ): InsertValueStatement = {
+    struct: ValueReference,
+    value: ValueReference,
+    index: Int
+  ): InsertValueStatement = {
     InsertValueStatement(struct, value, index)
   }
 
@@ -131,7 +131,7 @@ class FunctionFactory(
       case _ => Some(LoadStatement(assign(value)))
     }
   }
-  
+
   def nextMemoryReference(dragonType: DragonType): MemoryReference = {
     val memoryReference = MemoryReference(currentRegister, dragonType)
     currentRegister += 1

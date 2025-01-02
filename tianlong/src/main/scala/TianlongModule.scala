@@ -6,18 +6,18 @@ import struct.{ConstantReference, Dependency, DragonType}
 
 class TianlongModule extends DragonModule {
   def createFunction(
-                      name: String,
-                      parameters: List[DragonType],
-                      returnType: DragonType
-                    ): FunctionFactory = {
+    name: String,
+    parameters: List[DragonType],
+    returnType: DragonType
+  ): FunctionFactory = {
     val function = new FunctionFactory(this, addFunction(name, parameters, returnType))
     function
   }
 
   def format(
-            name: String,
-            value: String,
-            ): Dependency.Constant = {
+    name: String,
+    value: String,
+  ): Dependency.Constant = {
     val constant = dependencies.find {
       case Dependency.Constant(_, depValue, _) => depValue match {
         case ConstantReference.SmartString(depStringValue) => depStringValue == value
@@ -33,11 +33,11 @@ class TianlongModule extends DragonModule {
         newConstant
     }
   }
-  
+
   def createStruct(
-              name: String,
-              types: List[DragonType]
-            ): Dependency.Struct = {
+    name: String,
+    types: List[DragonType]
+  ): Dependency.Struct = {
     val struct = Dependency.Struct(name, types)
     dependencies += struct
     struct

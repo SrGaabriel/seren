@@ -12,8 +12,8 @@ object ParsingError {
   case class UnexpectedTokenError(token: Token) extends ParsingError {
     override val message: String = s"Unexpected token: $token"
   }
-  
-  class ExpectedTokenError(val token: Token, val expected: TokenKind) extends ParsingError {
+
+  class ExpectedDifferentTokenError(val token: Token, val expected: TokenKind) extends ParsingError {
     override val message: String = s"Expected $expected, found $token"
   }
 
@@ -32,7 +32,7 @@ object ParsingError {
   case class UnterminatedSequenceError(token: Token) extends ParsingError {
     override val message: String = s"Unterminated sequence: ${token.kind}"
   }
-  
+
   case class InvalidTypeDeclarationError(token: Token) extends ParsingError {
     override val message: String = s"Invalid type declaration: ${token.kind}(${token.value})"
   }

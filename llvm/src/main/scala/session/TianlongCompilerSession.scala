@@ -7,8 +7,8 @@ import util.{PaddingSorter, convertControlChars}
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
-import me.gabriel.seren.frontend.struct.{BinaryOp, FunctionModifier}
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
+import me.gabriel.seren.frontend.struct.{BinaryOp, FunctionModifier}
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*

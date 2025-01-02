@@ -9,7 +9,7 @@ class CompilerIoHandler {
     writer.close()
     file
   }
-  
+
   def linkLlFileToExecutable(llFile: String, output: String): Unit = {
     val process = new ProcessBuilder("clang", llFile, "-o", output)
       .inheritIO()

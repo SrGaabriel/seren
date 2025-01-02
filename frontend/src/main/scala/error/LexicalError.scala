@@ -3,6 +3,7 @@ package error
 
 sealed trait LexicalError {
   val position: Int
+
   def message: String
 }
 

@@ -1,6 +1,15 @@
 enum Option: Some(int32) | None
 
-struct Vector(x :: int32, y :: int32, z :: int16, w :: int32, a :: int8, b :: int16, l :: int16, planet :: string)
+struct Vector(
+    x :: int32,
+    y :: int32,
+    z :: int16,
+    w :: int32,
+    a :: int8,
+    b :: int16,
+    l :: int16,
+    planet :: string
+)
 
 def main() :: int32 {
     vector := %Vector(20, 19, 18i16, 17, 16i8, 15i16, 14i16, "Earth")

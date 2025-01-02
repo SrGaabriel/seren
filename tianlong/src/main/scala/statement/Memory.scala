@@ -4,9 +4,9 @@ package statement
 import struct.{DragonType, MemoryReference, ValueReference, isPointer}
 
 case class AssignStatement(
-                            memory: MemoryReference, 
-                            value: TypedDragonStatement
-                          ) extends DragonStatement {
+  memory: MemoryReference,
+  value: TypedDragonStatement
+) extends DragonStatement {
   override val memoryDependencies: List[ValueReference] = List(memory).concat(value.memoryDependencies)
 
   override def valid: Boolean = true
@@ -15,9 +15,9 @@ case class AssignStatement(
 }
 
 case class StoreStatement(
-                           value: ValueReference,
-                           pointer: ValueReference
-                         ) extends DragonStatement {
+  value: ValueReference,
+  pointer: ValueReference
+) extends DragonStatement {
   override val memoryDependencies: List[ValueReference] = List(value, pointer)
 
   override def valid: Boolean = pointer.dragonType.isPointer
@@ -26,10 +26,11 @@ case class StoreStatement(
 }
 
 case class BulkStoreStatement(
-                               values: List[ValueReference],
-                               pointer: ValueReference
-                             ) extends DragonStatement {
+  values: List[ValueReference],
+  pointer: ValueReference
+) extends DragonStatement {
   override val memoryDependencies: List[ValueReference] = values.concat(List(pointer))
+
   override def valid: Boolean = pointer.dragonType.isPointer
 
   private def onlyType = values.map(_.dragonType).distinct.head
@@ -41,20 +42,21 @@ case class BulkStoreStatement(
 }
 
 case class AllocateStatement(
-                              allocationType: DragonType,
-                              alignment: Int
-                            ) extends TypedDragonStatement {
+  allocationType: DragonType,
+  alignment: Int
+) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List.empty
 
   override def valid: Boolean = true
+
   override val statementType: DragonType = DragonType.ContextualPointer(allocationType)
 
   override def statementLlvm: String = s"alloca ${allocationType.llvm}, align $alignment"
 }
 
 case class LoadStatement(
-                          pointer: ValueReference
-                        ) extends TypedDragonStatement {
+  pointer: ValueReference
+) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List(pointer)
 
   override def valid: Boolean = pointer.dragonType.isPointer
@@ -69,12 +71,12 @@ case class LoadStatement(
 }
 
 case class GetElementPointerStatement(
-                                     struct: ValueReference,
-                                     elementType: DragonType,
-                                     index: ValueReference,
-                                     total: Boolean = true,
-                                      inBounds: Boolean = true
-                                    ) extends TypedDragonStatement {
+  struct: ValueReference,
+  elementType: DragonType,
+  index: ValueReference,
+  total: Boolean = true,
+  inBounds: Boolean = true
+) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List(struct, index)
 
   override def valid: Boolean = true
@@ -86,6 +88,7 @@ case class GetElementPointerStatement(
     case DragonType.ContextualPointer(inner) => inner
     case regular => regular
   }
+
   private def pointerType = DragonType.ContextualPointer(originalType)
 
   override def statementLlvm: String =
@@ -104,15 +107,15 @@ case class GetElementPointerStatement(
 }
 
 case class InsertValueStatement(
-                                  struct: ValueReference,
-                                  value: ValueReference,
-                                  index: Int
-                               ) extends TypedDragonStatement {
+  struct: ValueReference,
+  value: ValueReference,
+  index: Int
+) extends TypedDragonStatement {
   override val memoryDependencies: List[ValueReference] = List(struct, value)
-  
+
   override def valid: Boolean = true
-  
+
   override val statementType: DragonType = struct.dragonType
-  
+
   override def statementLlvm: String = s"insertvalue ${struct.dragonType.llvm} ${struct.llvm}, ${value.dragonType.llvm} ${value.llvm}, $index"
 }

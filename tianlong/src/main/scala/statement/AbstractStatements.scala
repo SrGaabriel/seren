@@ -5,8 +5,9 @@ import struct.{DragonType, ValueReference}
 
 trait DragonStatement {
   val memoryDependencies: List[ValueReference]
-  
+
   def valid: Boolean
+
   def statementLlvm: String
 }
 

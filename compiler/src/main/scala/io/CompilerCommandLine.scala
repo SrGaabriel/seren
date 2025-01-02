@@ -15,21 +15,21 @@ class CompilerCommandLine(args: List[String]) {
       keepAll = keepAll
     )
   }
-  
+
   def readFlag(name: String): Boolean = {
     args.contains(s"--$name")
   }
-  
+
   def readInlineOption(name: String): Option[String] = {
     args.find(_.startsWith(s"--$name=")).map(_.split("=").last)
   }
-  
+
   private def readOption(name: String): Option[String] = {
     args.sliding(2).collectFirst {
       case List(s"-$flag", value) if flag == name => value
     }
   }
-  
+
   private def readIndependentArgument(): String = {
     args.filterNot(_.startsWith("-")).mkString(" ")
   }
@@ -45,12 +45,12 @@ class CompilerCommandConfig(
     case name if name.endsWith(".sr") => name
     case other => other + ".sr"
   }
-  
+
   def inputName: Option[String] = input.split('.') match {
     case Array(name, "sr") => Some(name)
     case _ => None
   }
-  
+
   override def toString: String = {
     s"CompilerCommandConfig(input=$input, output=$output)"
   }

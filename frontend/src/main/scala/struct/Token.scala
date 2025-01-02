@@ -3,7 +3,7 @@ package struct
 
 import parser.Type
 
-case class Token(value: String, kind: TokenKind)
+case class Token(value: String, kind: TokenKind, position: Int)
 
 enum TokenKind:
   case BOF
@@ -11,6 +11,7 @@ enum TokenKind:
   case Plus
   case Minus
   case NewLine
+  case Whitespace
   case StringLiteral
   case Let
   case SemiColon

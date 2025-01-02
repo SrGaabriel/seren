@@ -14,7 +14,7 @@ case class SyntaxTree(root: RootNode) {
 
     prettyPrintNode(root, 0)
   }
-  
+
   def prettyPrintTyped: String = {
     def prettyPrintNode(node: SyntaxTreeNode, indent: Int): String = {
       val indentation = "  " * indent
@@ -55,11 +55,11 @@ case class NumericNode(token: Token, var nodeType: Type) extends TypedSyntaxTree
 }
 
 class BinaryOperationNode(
-                                val token: Token,
-                                val op: BinaryOp,
-                                val left: TypedSyntaxTreeNode,
-                                val right: TypedSyntaxTreeNode,
-                              ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val op: BinaryOp,
+  val left: TypedSyntaxTreeNode,
+  val right: TypedSyntaxTreeNode,
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(left, right)
   var nodeType: Type = left.nodeType
 
@@ -76,15 +76,15 @@ case class StringLiteralNode(token: Token) extends TypedSyntaxTreeNode {
 }
 
 class FunctionDeclarationNode(
-                                    val token: Token,
-                                    val name: String,
-                                    var nodeType: Type.Function,
-                                    val parameters: List[FunctionParameterNode],
-                                    val modifiers: Set[FunctionModifier],
-                                    val block: BlockNode
-                                  ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  var nodeType: Type.Function,
+  val parameters: List[FunctionParameterNode],
+  val modifiers: Set[FunctionModifier],
+  val block: BlockNode
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = parameters :+ block
-  
+
   def nodeType_$eq(nodeType: Type): Unit = {
     this.nodeType = nodeType.asInstanceOf[Type.Function]
   }
@@ -99,10 +99,10 @@ case class FunctionParameterNode(token: Token, name: String, var nodeType: Type)
 }
 
 class FunctionCallNode(
-                            val token: Token,
-                            val name: String,
-                            var arguments: List[TypedSyntaxTreeNode]
-                            ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  var arguments: List[TypedSyntaxTreeNode]
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
   var nodeType: Type = Type.Unknown
 
@@ -129,64 +129,64 @@ class ReferenceNode(val token: Token, val name: String, var nodeType: Type) exte
 }
 
 class StructDeclarationNode(
-                              val token: Token,
-                              val name: String,
-                              val fields: List[StructFieldNode],
-                              val functions: List[FunctionDeclarationNode]
-                           ) extends SyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  val fields: List[StructFieldNode],
+  val functions: List[FunctionDeclarationNode]
+) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = fields ++ functions
-  
+
   override def toString: String = s"StructDeclarationNode($name, $fields)"
 }
 
 class StructFieldNode(
-                       val token: Token,
-                       val name: String,
-                       var nodeType: Type
-                     ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  var nodeType: Type
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
 
   override def toString: String = s"StructFieldNode($name)"
 }
 
 class StructFieldAccessNode(
-                            val token: Token,
-                            val struct: TypedSyntaxTreeNode,
-                            val fieldName: String,
-                            var nodeType: Type
-                           ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val struct: TypedSyntaxTreeNode,
+  val fieldName: String,
+  var nodeType: Type
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List(struct)
 
   override def toString: String = s"StructFieldAccessNode($token, $struct, $fieldName)"
 }
 
 class StructInstantiationNode(
-                                val token: Token,
-                                val structName: String,
-                                var nodeType: Type,
-                                val arguments: List[TypedSyntaxTreeNode],
-                             ) extends TypedSyntaxTreeNode {
+  val token: Token,
+  val structName: String,
+  var nodeType: Type,
+  val arguments: List[TypedSyntaxTreeNode],
+) extends TypedSyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = arguments
 
   override def toString: String = s"StructInstantiationNode($structName, $arguments)"
 }
 
 class EnumDeclarationNode(
-                           val token: Token,
-                           val name: String,
-                           val variants: List[EnumVariantNode]
-                         ) extends SyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  val variants: List[EnumVariantNode]
+) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = variants
 
   override def toString: String = s"EnumDeclarationNode($name, $variants)"
 }
 
 class EnumVariantNode(
-                       val token: Token,
-                       val name: String,
-                       val types: List[Type]
-                     ) extends SyntaxTreeNode {
+  val token: Token,
+  val name: String,
+  val types: List[Type]
+) extends SyntaxTreeNode {
   override val children: List[SyntaxTreeNode] = List.empty
-  
+
   override def toString: String = s"EnumVariantNode($name, $types)"
 }

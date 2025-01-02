@@ -9,10 +9,10 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
     val dependencies = module.dependencies.map(transcribeDependency).mkString("\n")
     val functions = module.functions.map(transcribeFunction).mkString("\n")
     s"""
-      |$dependencies
-      |
-      |$functions
-      |""".stripMargin
+       |$dependencies
+       |
+       |$functions
+       |""".stripMargin
   }
 
   def transcribeDependency(dependency: Dependency): String = {
@@ -25,7 +25,7 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
         s"%$name = type { ${fields.map(_.llvm).mkString(", ")} }"
     }
   }
-  
+
   def transcribeFunction(function: DragonFunction): String = {
     val sb = new StringBuilder
     sb.append(s"define ${function.returnType.llvm} @${function.name}(")
