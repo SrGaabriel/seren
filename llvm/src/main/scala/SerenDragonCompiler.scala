@@ -10,9 +10,9 @@ class SerenDragonCompiler {
   val transcriber: DragonIrTranscriber = TianlongIrTranscriber()
 
   def compile(
-               tree: SyntaxTree,
-               typeEnvironment: TypeEnvironment
-             ): String = {
+    tree: SyntaxTree,
+    typeEnvironment: TypeEnvironment
+  ): String = {
     val session = new TianlongCompilerSession(tree, typeEnvironment)
     session.generateTree()
     val module = session.finish()

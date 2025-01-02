@@ -3,6 +3,7 @@ package inference
 
 sealed trait TypeConstraint {
   def left: LazyType
+
   def right: LazyType
 }
 
@@ -10,6 +11,7 @@ case class EqualityConstraint(left: LazyType, right: LazyType) extends TypeConst
 
 case class StructFieldConstraint(struct: LazyType, field: String, fieldType: LazyType) extends TypeConstraint {
   override def left: LazyType = struct
+
   override def right: LazyType = fieldType
 }
 

@@ -1,20 +1,20 @@
 package me.gabriel.seren.analyzer
 package inference
 
-import scala.collection.mutable
 import me.gabriel.seren.frontend.parser.tree.{FunctionDeclarationNode, StructDeclarationNode, SyntaxTreeNode}
 
+import scala.collection.mutable
 import scala.language.implicitConversions
 
 class LazySymbolBlock(
-                     module: String,
-                     id: SyntaxTreeNode,
-                     parent: Option[LazySymbolBlock],
-                     children: mutable.ListBuffer[SymbolBlock]
-                     ) extends SymbolBlock(module, parent, id, children) {
+  module: String,
+  id: SyntaxTreeNode,
+  parent: Option[LazySymbolBlock],
+  children: mutable.ListBuffer[SymbolBlock]
+) extends SymbolBlock(module, parent, id, children) {
   var lazyDefinitions: mutable.HashMap[SyntaxTreeNode, LazyType] = mutable.HashMap[SyntaxTreeNode, LazyType]()
   var lazySymbols: mutable.HashMap[String, LazyType] = mutable.HashMap[String, LazyType]()
-  
+
   override def createChild(id: SyntaxTreeNode): LazySymbolBlock = {
     val child = new LazySymbolBlock(module, id, Some(this), mutable.ListBuffer())
     children += child
@@ -25,7 +25,7 @@ class LazySymbolBlock(
     lazyDefinitions(node) = lazyType
     lazyType
   }
-  
+
   def lazyRegisterSymbol(name: String, lazyType: LazyType): LazyType = {
     lazySymbols(name) = lazyType
     lazyType
@@ -37,7 +37,7 @@ class LazySymbolBlock(
       case _ => parent.flatMap(_.searchStruct())
     }
   }
-  
+
   def prettyPrintLazyTypes(): Unit = {
     def printBlock(block: LazySymbolBlock, indent: Int): Unit = {
       println(">  " * indent + block.id + s" => ${block.lazyDefinitions.size} types")
@@ -46,6 +46,7 @@ class LazySymbolBlock(
       }
       block.children.foreach(child => printBlock(child, indent + 1))
     }
+
     printBlock(this, 0)
   }
 }

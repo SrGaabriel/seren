@@ -5,13 +5,13 @@ import external.ModuleManager
 
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.Type.{UnknownIdentifier, UnknownThis}
-import me.gabriel.seren.frontend.parser.tree.{FunctionCallNode, NumericNode, StructInstantiationNode, SyntaxTreeNode, TypedSyntaxTreeNode}
+import me.gabriel.seren.frontend.parser.tree.*
 
 object TypeSynthesizer {
   def updateTreeTypes(
-                        module: ModuleManager,
-                        rootBlock: LazySymbolBlock
-                      ): Unit = {
+    module: ModuleManager,
+    rootBlock: LazySymbolBlock
+  ): Unit = {
     def updateBlockTypes(block: LazySymbolBlock): Unit = {
       block.children.foreach { case childBlock: LazySymbolBlock =>
         updateBlockTypes(childBlock)
@@ -26,10 +26,10 @@ object TypeSynthesizer {
   }
 
   def updateNodeTypes(
-                       module: ModuleManager,
-                       block: LazySymbolBlock,
-                       node: SyntaxTreeNode
-                     ): Unit = {
+    module: ModuleManager,
+    block: LazySymbolBlock,
+    node: SyntaxTreeNode
+  ): Unit = {
     node match {
       case typedNode: TypedSyntaxTreeNode =>
         val inferredLazyType = block.lazyDefinitions(typedNode)
@@ -48,14 +48,14 @@ object TypeSynthesizer {
   }
 
   def lazyTypeToType(
-                      module: ModuleManager,
-                      block: LazySymbolBlock,
-                      lazyType: LazyType
-                    ): Type = {
+    module: ModuleManager,
+    block: LazySymbolBlock,
+    lazyType: LazyType
+  ): Type = {
     lazyType match {
       case TypeLiteral(actualType) =>
         actualType match {
-          case UnknownThis => 
+          case UnknownThis =>
             block.searchStruct() match {
               case Some(struct) => Type.Struct(struct.name, struct.fields.map(f => f.name -> f.nodeType).toMap)
               case None => actualType
@@ -91,12 +91,12 @@ object TypeSynthesizer {
   }
 
   def getExpectedTypes(
-                       module: ModuleManager,
-                       block: LazySymbolBlock,
-                       node: SyntaxTreeNode
-                     ): List[LazyType] = {
+    module: ModuleManager,
+    block: LazySymbolBlock,
+    node: SyntaxTreeNode
+  ): List[LazyType] = {
     node match {
-      case call: FunctionCallNode => 
+      case call: FunctionCallNode =>
         module.searchFunction(call.name) match {
           case Some(function) => function.parameters.map(TypeLiteral.apply)
           case None => List.empty

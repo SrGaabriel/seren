@@ -1,11 +1,11 @@
 package me.gabriel.seren.analyzer
 package impl.node
 
+import error.AnalysisError.FunctionNotDefined
 import error.AnalysisResult
 import external.ModuleManager
 import impl.SemanticAnalyzer
 
-import me.gabriel.seren.analyzer.error.AnalysisError.FunctionNotDefined
 import me.gabriel.seren.frontend.parser.tree.FunctionCallNode
 
 implicit val callAnalyzer: SemanticAnalyzer[FunctionCallNode] =
@@ -14,6 +14,6 @@ implicit val callAnalyzer: SemanticAnalyzer[FunctionCallNode] =
     if (function.isEmpty) {
       result.error(FunctionNotDefined(node.name, node))
     }
-    
+
     block
   }

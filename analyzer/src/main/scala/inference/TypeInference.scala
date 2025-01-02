@@ -7,13 +7,13 @@ import me.gabriel.seren.frontend.parser.tree.{SyntaxTreeNode, TypedSyntaxTreeNod
 
 trait TypeInference {
   def traverseBottomUp(
-                        module: ModuleManager,
-                        block: LazySymbolBlock,
-                        node: SyntaxTreeNode
-                      ): Unit
+    module: ModuleManager,
+    block: LazySymbolBlock,
+    node: SyntaxTreeNode
+  ): Unit
 
   def processTypedNode(
-                        block: LazySymbolBlock,
-                        node: TypedSyntaxTreeNode
-                      ): LazyType
+    block: LazySymbolBlock,
+    node: TypedSyntaxTreeNode
+  ): LazyType
 }

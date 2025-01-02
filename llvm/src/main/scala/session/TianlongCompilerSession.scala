@@ -2,15 +2,13 @@ package me.gabriel.seren.llvm
 package session
 
 import `type`.{allocationDragon, referenceDragon}
-import util.convertControlChars
+import util.{PaddingSorter, convertControlChars}
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
-import me.gabriel.seren.frontend.struct.BinaryOp
-import me.gabriel.seren.frontend.struct.FunctionModifier
+import me.gabriel.seren.frontend.struct.{BinaryOp, FunctionModifier}
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
-import util.PaddingSorter
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*
@@ -20,9 +18,9 @@ import me.gabriel.tianlong.struct.DragonType.Int32
 import scala.collection.mutable
 
 class TianlongCompilerSession(
-                             val syntaxTree: SyntaxTree,
-                             val typeEnvironment: TypeEnvironment
-                             ) {
+  val syntaxTree: SyntaxTree,
+  val typeEnvironment: TypeEnvironment
+) {
   val module = TianlongModule()
   val memoryReferences: mutable.Map[SymbolBlock, mutable.HashMap[String, MemoryReference]] = mutable.HashMap()
 
@@ -46,9 +44,9 @@ class TianlongCompilerSession(
 
   def generateStructDeclaration(node: StructDeclarationNode): Unit = {
     module.createStruct(node.name, PaddingSorter.sortTypes(node.fields.map(_.nodeType.referenceDragon)))
-    
+
     val block = typeEnvironment.root.surfaceSearchChild(node).get
-    
+
     for (function <- node.functions) {
       generateFunctionDeclaration(
         block = block,
@@ -79,7 +77,7 @@ class TianlongCompilerSession(
         return
     }
     val block = typeEnvironment.root.surfaceSearchChild(node).get
-    
+
     generateFunctionDeclaration(
       block = block,
       node = node,
@@ -89,15 +87,15 @@ class TianlongCompilerSession(
       modifiers = node.modifiers
     )
   }
-  
+
   def generateFunctionDeclaration(
-                                   block: SymbolBlock,
-                                   node: FunctionDeclarationNode,
-                                   name: String,
-                                   parameters: List[FunctionParameterNode],
-                                   returnType: Type,
-                                   modifiers: Set[FunctionModifier],
-                                 ): Unit = {
+    block: SymbolBlock,
+    node: FunctionDeclarationNode,
+    name: String,
+    parameters: List[FunctionParameterNode],
+    returnType: Type,
+    modifiers: Set[FunctionModifier],
+  ): Unit = {
     val factory = module.createFunction(
       name = name,
       parameters = parameters.map(_.nodeType.referenceDragon),
@@ -120,11 +118,11 @@ class TianlongCompilerSession(
   }
 
   def generateFunctionInstruction(
-                                   block: SymbolBlock,
-                                   function: FunctionDeclarationNode,
-                                   factory: FunctionFactory,
-                                   node: SyntaxTreeNode
-                                 ): Option[DragonStatement] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: SyntaxTreeNode
+  ): Option[DragonStatement] = {
     node match {
       case assignment: AssignmentNode => generateAssignment(block, function, factory, assignment)
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
@@ -136,12 +134,12 @@ class TianlongCompilerSession(
   }
 
   def generateValue(
-                      block: SymbolBlock,
-                      function: FunctionDeclarationNode,
-                      factory: FunctionFactory,
-                      node: SyntaxTreeNode,
-                      nest: Boolean = true
-                   ): Option[ValueReference] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: SyntaxTreeNode,
+    nest: Boolean = true
+  ): Option[ValueReference] = {
     val value = node match {
       case number: NumericNode if nest => generateNumberValue(factory, number)
       case number: NumericNode => generateNumber(factory, number)
@@ -160,13 +158,13 @@ class TianlongCompilerSession(
       case _ => value
     }
   }
-  
+
   def generateAssignment(
-                          block: SymbolBlock,
-                          function: FunctionDeclarationNode,
-                          factory: FunctionFactory,
-                          node: AssignmentNode
-                        ): Option[AssignStatement] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: AssignmentNode
+  ): Option[AssignStatement] = {
     val value = generateValue(
       block = block,
       function = function,
@@ -187,20 +185,20 @@ class TianlongCompilerSession(
   }
 
   def generateReference(
-                        block: SymbolBlock,
-                        function: FunctionDeclarationNode,
-                        factory: FunctionFactory,
-                        node: ReferenceNode
-                       ): Option[MemoryReference] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: ReferenceNode
+  ): Option[MemoryReference] = {
     memoryReferences.get(block).flatMap(_.get(node.name))
   }
 
   def generateCall(
-                    block: SymbolBlock,
-                    function: FunctionDeclarationNode,
-                    factory: FunctionFactory,
-                    node: FunctionCallNode
-                  ): Option[CallStatement] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: FunctionCallNode
+  ): Option[CallStatement] = {
     val arguments = node.arguments.map { argument =>
       generateValue(
         block = block,
@@ -220,11 +218,11 @@ class TianlongCompilerSession(
   }
 
   def generateReturn(
-                      block: SymbolBlock,
-                      function: FunctionDeclarationNode,
-                      factory: FunctionFactory,
-                      node: ReturnNode
-                    ): Option[DragonStatement] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: ReturnNode
+  ): Option[DragonStatement] = {
     val returns = factory.returnStatement(
       value = generateValue(
         block = block,
@@ -235,13 +233,13 @@ class TianlongCompilerSession(
     )
     Some(returns)
   }
-  
+
   def generateStructFieldAccess(
-                            block: SymbolBlock,
-                            function: FunctionDeclarationNode,
-                            factory: FunctionFactory,
-                            node: StructFieldAccessNode
-                          ): Option[TypedDragonStatement] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: StructFieldAccessNode
+  ): Option[TypedDragonStatement] = {
     val struct = generateValue(
       block = block,
       function = function,
@@ -256,16 +254,16 @@ class TianlongCompilerSession(
       elementType = node.nodeType.referenceDragon,
       index = ConstantReference.Number(indexOfField.toString, Int32)
     )
-    
+
     Some(factory.assignAndLoadIfImmutable(element).getOrElse(element))
   }
 
   def generateStructInstantiation(
-                             block: SymbolBlock,
-                             function: FunctionDeclarationNode,
-                             factory: FunctionFactory,
-                             node: StructInstantiationNode
-                           ): Option[MemoryReference] = {
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    node: StructInstantiationNode
+  ): Option[MemoryReference] = {
     val structType = node.nodeType.allocationDragon
     val allocation = factory.assign(factory.allocate(
       allocationType = structType,
@@ -298,16 +296,16 @@ class TianlongCompilerSession(
   }
 
   def generateNumberValue(
-                      factory: FunctionFactory,
-                      node: NumericNode,
-                    ): Option[ValueReference] = {
+    factory: FunctionFactory,
+    node: NumericNode,
+  ): Option[ValueReference] = {
     Some(ConstantReference.Number(node.token.value, node.nodeType.referenceDragon))
   }
-  
+
   def generateNumber(
-                      factory: FunctionFactory,
-                      node: NumericNode
-                    ): Option[BinaryOpStatement] = {
+    factory: FunctionFactory,
+    node: NumericNode
+  ): Option[BinaryOpStatement] = {
     Some(factory.add(
       ConstantReference.Number(
         number = node.token.value,
@@ -319,11 +317,11 @@ class TianlongCompilerSession(
       )
     ))
   }
-  
+
   def generateBinaryOp(
-                        factory: FunctionFactory,
-                        node: BinaryOperationNode
-                      ): Option[BinaryOpStatement] = {
+    factory: FunctionFactory,
+    node: BinaryOperationNode
+  ): Option[BinaryOpStatement] = {
     val left = generateValue(
       block = null,
       function = null,
@@ -342,14 +340,14 @@ class TianlongCompilerSession(
       case BinaryOp.Multiply => BinaryOpType.Mul
       case BinaryOp.Divide => BinaryOpType.Div
     }
-    
+
     Some(factory.binaryOp(left, right, op))
   }
-  
+
   def generateString(
-                      factory: FunctionFactory,
-                      node: StringLiteralNode
-                    ): Option[BitcastStatement] = {
+    factory: FunctionFactory,
+    node: StringLiteralNode
+  ): Option[BitcastStatement] = {
     val format = factory.useFormat(
       name = s"str_${node.hashCode.toString}",
       value = convertControlChars(node.token.value)

@@ -31,10 +31,10 @@ class DefaultSemanticAnalysisManager(moduleManager: ModuleManager) extends Seman
   }
 
   def analyzeNode[T](
-                    block: SymbolBlock,
-                    node: T,
-                    currentResult: AnalysisResult
-                    )(implicit analyzer: SemanticAnalyzer[T]): SymbolBlock = {
+    block: SymbolBlock,
+    node: T,
+    currentResult: AnalysisResult
+  )(implicit analyzer: SemanticAnalyzer[T]): SymbolBlock = {
     analyzer.analyze(moduleManager, block, node, currentResult)
   }
 }

@@ -10,15 +10,15 @@ sealed trait Package {
 
 object Package {
   case class Function(
-                       name: String,
-                       directive: Directive,
-                       returnType: Type,
-                       parameters: List[Type]
-                     ) extends Package
+    name: String,
+    directive: Directive,
+    returnType: Type,
+    parameters: List[Type]
+  ) extends Package
 
   case class Struct(
-                     name: String,
-                     directive: Directive,
-                     fields: Map[String, Type]
-                   ) extends Package
+    name: String,
+    directive: Directive,
+    fields: Map[String, Type]
+  ) extends Package
 }

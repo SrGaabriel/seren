@@ -3,18 +3,17 @@ package inference
 
 import external.ModuleManager
 
-import me.gabriel.seren.analyzer.inference
 import me.gabriel.seren.frontend.parser.Type
-import me.gabriel.seren.frontend.parser.tree.{StructDeclarationNode, *}
+import me.gabriel.seren.frontend.parser.tree.*
 
 import scala.collection.mutable
 
 class HardTypeInference extends TypeInference {
   override def traverseBottomUp(
-                                 module: ModuleManager,
-                                 block: LazySymbolBlock,
-                                 node: SyntaxTreeNode
-                               ): Unit = {
+    module: ModuleManager,
+    block: LazySymbolBlock,
+    node: SyntaxTreeNode
+  ): Unit = {
     val actualBlock = node match {
       case function: FunctionDeclarationNode =>
         module.addLocalFunction(
@@ -45,9 +44,9 @@ class HardTypeInference extends TypeInference {
   }
 
   override def processTypedNode(
-                                 block: LazySymbolBlock,
-                                 node: TypedSyntaxTreeNode
-                               ): LazyType = {
+    block: LazySymbolBlock,
+    node: TypedSyntaxTreeNode
+  ): LazyType = {
     node match {
       case functionNode: FunctionDeclarationNode =>
         block.lazyDefine(functionNode, TypeFunction(

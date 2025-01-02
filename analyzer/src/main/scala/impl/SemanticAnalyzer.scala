@@ -6,9 +6,9 @@ import external.ModuleManager
 
 trait SemanticAnalyzer[T] {
   def analyze(
-               module: ModuleManager,
-               block: SymbolBlock,
-               node: T,
-               currentResult: AnalysisResult
-             ): SymbolBlock
+    module: ModuleManager,
+    block: SymbolBlock,
+    node: T,
+    currentResult: AnalysisResult
+  ): SymbolBlock
 }
