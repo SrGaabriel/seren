@@ -8,7 +8,7 @@ import java.io.{FileOutputStream, OutputStream}
 object GlobalLoggingContext {
   var logFormatter: LogFormatter = ColoredTracingLogFormatter()
   var logDispatcher: LogDispatcher = new LogDispatcher(NullOutputStream)
-
+  
   def log[T](context: LoggingContext, message: T)(implicit loggable: Loggable[T]): Unit =
     logDispatcher.autoDispatch(logFormatter.format(context))
     logDispatcher.dispatch(loggable, message)

@@ -7,6 +7,7 @@ import scala.collection.mutable.ListBuffer
 
 class ModuleManager(val directive: Directive) {
   val packages: ListBuffer[Package] = ListBuffer()
+  val local: ListBuffer[Package] = ListBuffer()
 
   def importPackage(`package`: Package): Unit = {
     packages += `package`
@@ -16,16 +17,13 @@ class ModuleManager(val directive: Directive) {
     name: String,
     params: List[Type],
     returnType: Type
-  ): Unit = {
-    importPackage(
-      Package.Function(
-        name = name,
-        directive = directive,
-        parameters = params,
-        returnType = returnType
-      )
+  ): Unit =
+    local += Package.Function(
+      name = name,
+      directive = directive,
+      parameters = params,
+      returnType = returnType
     )
-  }
 
   def addStruct(
     name: String,
@@ -41,6 +39,11 @@ class ModuleManager(val directive: Directive) {
   }
 
   def searchFunction(name: String): Option[Package.Function] = {
+    local.collectFirst {
+      case function: Package.Function
+        if function.name == name
+      => function
+    } orElse
     packages.collectFirst {
       case function: Package.Function
         if function.name == name
@@ -49,6 +52,11 @@ class ModuleManager(val directive: Directive) {
   }
 
   def searchStruct(name: String): Option[Package.Struct] = {
+    local.collectFirst {
+      case struct: Package.Struct
+        if struct.name == name
+      => struct
+    } orElse
     packages.collectFirst {
       case struct: Package.Struct
         if struct.name == name

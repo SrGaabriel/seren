@@ -41,11 +41,6 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
   val moduleManager = ModuleManager(
     directive = Directive(module = "root", subdirectories = List.empty)
   )
-  moduleManager.addLocalFunction(
-    name = "print_line",
-    params = List(Type.Any),
-    returnType = Type.Void
-  )
 
   val tree = syntaxTree.right.get
   val root = tree.root

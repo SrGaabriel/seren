@@ -11,13 +11,13 @@ struct Vector(
     planet :: string
 )
 
-def main() :: int32 {
+fun main() :: int32 {
     vector := %Vector(20, 19, 18i16, 17, 16i8, 15i16, 14i16, "Earth")
     print_vector(vector)
     ret 0
 }
 
-def print_vector(vector :: Vector) {
+fun print_vector(vector :: Vector) {
     printf("X: %d\n", vector.x)
     printf("Y: %d\n", vector.y)
     printf("Z: %d\n", vector.z)
@@ -28,4 +28,9 @@ def print_vector(vector :: Vector) {
     printf("Planet: %s\n", vector.planet)
 }
 
-external<C> def printf(i8*, ...)
+//fun greet(str :: string) science
+//"Hello" => printf("Hi!\n")
+//"Goodbye" => printf("Bye!\n")
+//name => printf("Hello, %s!\n", name)
+
+external<C> fun printf(i8*, ...)

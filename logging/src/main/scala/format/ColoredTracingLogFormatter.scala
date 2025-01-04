@@ -7,6 +7,8 @@ import java.time.format.DateTimeFormatter
 
 class ColoredTracingLogFormatter extends LogFormatter {
   var dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+  var currentBiggestIndentation: Int = 0
+  var alignmentThreshold: Int = 8
 
   override def format(context: LoggingContext): String =
     val levelColor = context.level match
@@ -19,7 +21,13 @@ class ColoredTracingLogFormatter extends LogFormatter {
     val dateTime = context.time.format(dateTimeFormatter)
     val origin = formatOrigin(context.origin.getOrElse("?????"))
 
-    s"${ConsoleColors.colorRGB(114,114,114)}$dateTime ${ConsoleColors.BOLD}[$origin] ${ConsoleColors.RESET}$levelColor${context.level} ${ConsoleColors.RESET}"
+    val format = s"${ConsoleColors.colorRGB(114,114,114)}$dateTime ${ConsoleColors.BOLD}[$origin] %s${ConsoleColors.RESET}$levelColor${context.level} ${ConsoleColors.RESET}"
+    val padding = if currentBiggestIndentation > format.length && currentBiggestIndentation - format.length < alignmentThreshold then
+      " " * (currentBiggestIndentation - format.length)
+    else
+      currentBiggestIndentation = format.length
+      ""
+    format.format(padding)
 
   def formatOrigin(origin: String): String =
     val parts = origin.split("\\.")

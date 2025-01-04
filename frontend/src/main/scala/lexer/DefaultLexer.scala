@@ -33,7 +33,6 @@ class DefaultLexer extends Lexer {
         case '+' => addToken("+", TokenKind.Plus)
         case '-' => addToken("-", TokenKind.Minus)
         case '*' => addToken("*", TokenKind.Multiply)
-        case '/' => addToken("/", TokenKind.Divide)
         case '(' => addToken("(", TokenKind.LeftParenthesis)
         case ')' => addToken(")", TokenKind.RightParenthesis)
         case '{' => addToken("{", TokenKind.LeftBrace)
@@ -56,6 +55,10 @@ class DefaultLexer extends Lexer {
         case '.' if input.drop(position).startsWith("...") =>
           addToken("...", TokenKind.Vararg)
         case '.' => addToken(".", TokenKind.Dot)
+        case '/' if input.drop(position).startsWith("//") =>
+          val comment = input.drop(position).takeWhile(_ != '\n')
+          position += comment.length
+        case '/' => addToken("/", TokenKind.Divide)
         case '"' =>
           val string = input.drop(position + 1).takeWhile(_ != '"')
           if (string.isEmpty) return Left(LexicalError.UnterminatedString(position))
@@ -77,7 +80,7 @@ class DefaultLexer extends Lexer {
           val identifier = input.drop(position).takeWhile(c => c.isLetterOrDigit || c == '_')
           val tokenKind = identifier match {
             case "let" => TokenKind.Let
-            case "def" => TokenKind.Function
+            case "fun" => TokenKind.Function
             case "ret" => TokenKind.Return
             case "any" => TokenKind.AnyType
             case "this" => TokenKind.This
@@ -98,7 +101,7 @@ class DefaultLexer extends Lexer {
     }
 
     tokens += Token("", TokenKind.EOF, position)
-    Right(optimizeTokenStream(tokens.toList))
+    Right(tokens.toList)
   }
 
   def optimizeTokenStream(tokens: List[Token]): List[Token] = {

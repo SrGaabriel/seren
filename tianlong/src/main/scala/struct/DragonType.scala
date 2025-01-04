@@ -46,7 +46,7 @@ object DragonType {
 
   case class Struct(
     name: String,
-    alignment: Int,
+    alignment: Int
   ) extends DragonType(
     llvm = s"%$name",
     bytes = alignment
