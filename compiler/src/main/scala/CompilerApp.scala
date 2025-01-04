@@ -11,8 +11,13 @@ import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
 import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
 import me.gabriel.seren.frontend.struct.TokenStream
 import me.gabriel.seren.llvm.SerenDragonCompiler
+import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
 
 @main def main(args: String*): Unit = {
+  setupTerminalLogging()
+  val logger = createLogger("orchestrator")
+  logger.log(LogLevel.INFO, "Starting compiler")
+
   val cli = new CompilerCommandLine(args.toList)
   val options = cli.parse()
   val io = new CompilerIoHandler
@@ -21,7 +26,7 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   val result = lexer.lex(sourceCode)
 
   result.left.foreach(error => {
-    println(s"Lexing error: ${error.message}")
+    logger.log(LogLevel.ERROR, s"Lexing error: ${error.message}")
     sys.exit(1)
   })
   val stream = TokenStream(result.right.get)
@@ -29,7 +34,7 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   val parser: Parser = new DefaultParser
   val syntaxTree = parser.parse(stream)
   syntaxTree.left.foreach(error => {
-    println(s"Parsing error: ${error.message}")
+    logger.log(LogLevel.ERROR, s"Parsing error: ${error.message}")
     sys.exit(1)
   })
 
@@ -54,7 +59,7 @@ import me.gabriel.seren.llvm.SerenDragonCompiler
   val analysisManager = DefaultSemanticAnalysisManager(moduleManager)
   val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
   if (analysisResult.errors.nonEmpty) {
-    println(s"There have been ${analysisResult.errors.size} errors:")
+    logger.log(LogLevel.ERROR, s"Semantic analysis failed with ${analysisResult.errors.size} errors")
     analysisResult.errors.foreach(error => println(s"  |${error.getClass.getSimpleName}: ${error.message}"))
     sys.exit(1)
   }

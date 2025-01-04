@@ -9,6 +9,8 @@ import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
 import me.gabriel.seren.frontend.struct.FunctionModifier.External
 import me.gabriel.seren.frontend.struct.{BinaryOp, FunctionModifier}
+import me.gabriel.seren.logging.LogLevel
+import me.gabriel.seren.logging.tracing.Traceable
 import me.gabriel.tianlong.TianlongModule
 import me.gabriel.tianlong.factory.FunctionFactory
 import me.gabriel.tianlong.statement.*
@@ -20,7 +22,7 @@ import scala.collection.mutable
 class TianlongCompilerSession(
   val syntaxTree: SyntaxTree,
   val typeEnvironment: TypeEnvironment
-) {
+) extends Traceable {
   val module = TianlongModule()
   val memoryReferences: mutable.Map[SymbolBlock, mutable.HashMap[String, MemoryReference]] = mutable.HashMap()
 
