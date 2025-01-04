@@ -5,10 +5,12 @@ import external.ModuleManager
 
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
+import me.gabriel.seren.logging.LogLevel
+import me.gabriel.seren.logging.tracing.Traceable
 
 import scala.collection.mutable
 
-class HardTypeInference extends TypeInference {
+class HardTypeInference extends TypeInference, Traceable {
   override def traverseBottomUp(
     module: ModuleManager,
     block: LazySymbolBlock,
@@ -77,7 +79,7 @@ class HardTypeInference extends TypeInference {
 
       case _ =>
         if (node.nodeType == Type.Unknown) {
-          println(s"Warning: registering unknown typed node $node")
+          log(LogLevel.WARNING, s"Registering unknown typed node $node")
         }
         block.lazyDefine(node, TypeLiteral(node.nodeType))
     }

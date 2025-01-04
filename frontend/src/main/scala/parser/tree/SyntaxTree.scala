@@ -44,7 +44,12 @@ case class RootNode(token: Token, children: List[SyntaxTreeNode]) extends Syntax
   override def toString: String = s"RootNode(children=${children.size})"
 }
 
-case class BlockNode(token: Token, children: List[SyntaxTreeNode]) extends SyntaxTreeNode {
+class BlockNode(
+  val token: Token,
+  val children: List[SyntaxTreeNode]
+) extends TypedSyntaxTreeNode {
+  var nodeType: Type = Type.Unknown
+  
   override def toString: String = s"BlockNode(children=${children.size})"
 }
 

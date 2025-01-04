@@ -15,12 +15,12 @@ object GlobalLoggingContext {
     logDispatcher.newline()
 
   def lazyLog[T](context: LoggingContext, message: T)(implicit loggable: Loggable[T]): Unit =
-    logDispatcher.autoDispatch(logFormatter.format(context))
+    logDispatcher.lazyAutoDispatch(logFormatter.format(context))
     logDispatcher.lazyDispatch(loggable, () => message)
     logDispatcher.enqueueNewline()
-  
+
   def lazyLog[T](context: LoggingContext, message: () => T)(implicit loggable: Loggable[T]): Unit =
-    logDispatcher.autoDispatch(logFormatter.format(context))
+    logDispatcher.lazyAutoDispatch(logFormatter.format(context))
     logDispatcher.lazyDispatch(loggable, message)
     logDispatcher.enqueueNewline()
 

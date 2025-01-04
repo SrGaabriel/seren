@@ -59,8 +59,10 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
   val analysisManager = DefaultSemanticAnalysisManager(moduleManager)
   val analysisResult = analysisManager.analyzeTree(typeEnvironment, tree)
   if (analysisResult.errors.nonEmpty) {
-    logger.log(LogLevel.ERROR, s"Semantic analysis failed with ${analysisResult.errors.size} errors")
-    analysisResult.errors.foreach(error => println(s"  |${error.getClass.getSimpleName}: ${error.message}"))
+    val errors = analysisResult.errors
+      .map(err => s"  |${err.getClass.getSimpleName}: ${err.message}")
+      .mkString("\n")
+    logger.log(LogLevel.ERROR, s"Semantic analysis failed with ${analysisResult.errors.size} errors\n$errors")
     sys.exit(1)
   }
 
@@ -73,4 +75,6 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
     io.linkLlFileToExecutable(llFileName, llFileName.replace(".ll", ".exe"))
     if (!options.keepAll) llFile.delete()
   }
+  logger.lazyLog(LogLevel.INFO, "Compilation finished")
+  logger.dispatchAllQueuedLogs()
 }

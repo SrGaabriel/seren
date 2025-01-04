@@ -9,13 +9,13 @@ trait SerenLogger {
       message
     )
   
-  def lazyLog[T](level: LogLevel, message: T)(implicit loggable: Loggable[T]): Unit =
+  def lazyLogObject[T](level: LogLevel, message: T)(implicit loggable: Loggable[T]): Unit =
     GlobalLoggingContext.lazyLog(
       this.makeContext(level),
       message
     )
   
-  def lazyLog[T](level: LogLevel, message: () => T)(implicit loggable: Loggable[T]): Unit =
+  def lazyLogObject[T](level: LogLevel, message: () => T)(implicit loggable: Loggable[T]): Unit =
     GlobalLoggingContext.lazyLog(
       this.makeContext(level),
       message
@@ -30,4 +30,12 @@ trait SerenLogger {
     
   def log(level: LogLevel, throwable: Throwable): Unit = 
     this.logObject(level, throwable)(LoggableException)
+
+  def lazyLog(level: LogLevel, message: String): Unit =
+    this.lazyLogObject(level, message)(LoggableString)
+
+  def lazyLog(level: LogLevel, message: () => String): Unit =
+    this.lazyLogObject(level, message)(LoggableString)
+    
+  def dispatchAllQueuedLogs(): Unit = GlobalLoggingContext.dispatchAllQueuedLogs()
 }

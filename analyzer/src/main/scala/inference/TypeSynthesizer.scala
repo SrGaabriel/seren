@@ -6,8 +6,10 @@ import external.ModuleManager
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.Type.{UnknownIdentifier, UnknownThis}
 import me.gabriel.seren.frontend.parser.tree.*
+import me.gabriel.seren.logging.LogLevel
+import me.gabriel.seren.logging.tracing.Traceable
 
-object TypeSynthesizer {
+object TypeSynthesizer extends Traceable {
   def updateTreeTypes(
     module: ModuleManager,
     rootBlock: LazySymbolBlock
@@ -39,7 +41,7 @@ object TypeSynthesizer {
           typedNode.nodeType = Type.Int
           return
         } else if (finalType == Type.Unknown) {
-          throw new RuntimeException(s"Could not resolve type for node $node ($inferredLazyType)")
+          log(LogLevel.ERROR, s"Could not infer type for node $node (lazyType=$inferredLazyType)")
         }
 
         typedNode.nodeType = finalType

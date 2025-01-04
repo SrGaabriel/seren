@@ -130,7 +130,7 @@ class TianlongCompilerSession(
       case ret: ReturnNode => generateReturn(block, function, factory, ret)
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case _ =>
-        println(s"Unknown instruction: $node")
+        log(LogLevel.ERROR, s"Unknown instruction: $node")
         None
     }
   }
@@ -152,7 +152,7 @@ class TianlongCompilerSession(
       case instantiation: StructInstantiationNode => generateStructInstantiation(block, function, factory, instantiation)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case _ =>
-        println(s"Unknown value: $node")
+        log(LogLevel.ERROR, s"Unknown value: $node")
         None
     }
     value match {
