@@ -114,8 +114,8 @@ class FunctionCallNode(
   override def toString: String = s"FunctionCallNode($name, $arguments)"
 }
 
-case class ReturnNode(token: Token, value: TypedSyntaxTreeNode) extends SyntaxTreeNode {
-  override val children: List[SyntaxTreeNode] = List(value)
+case class ReturnNode(token: Token, value: Option[TypedSyntaxTreeNode]) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = value.toList
 
   override def toString: String = s"ReturnNode($value)"
 }

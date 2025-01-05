@@ -1,8 +1,11 @@
 package me.gabriel.tianlong
 package transcriber
 
-import function.DragonFunction
+import function.{DragonFunction, DragonFunctionBlock}
+import statement.DragonStatement
 import struct.Dependency
+
+import scala.collection.mutable
 
 class TianlongIrTranscriber extends DragonIrTranscriber {
   override def transcribe(module: DragonModule): String = {
@@ -31,8 +34,21 @@ class TianlongIrTranscriber extends DragonIrTranscriber {
     sb.append(s"define ${function.returnType.llvm} @${function.name}(")
     sb.append(function.parameters.map(param => s"${param.dragonType.llvm} ${param.llvm}").mkString(", "))
     sb.append(") {\n")
-    sb.append(function.statements.map(statement => s"  ${statement.statementLlvm}").mkString("\n"))
+    sb.append(transcribeStatements(function.statements))
+    function.blocks.foreach((_, block) => sb.append(transcribeBlock(block)))
     sb.append("\n}")
     sb.toString()
+  }
+
+  def transcribeBlock(block: DragonFunctionBlock): String = {
+    val sb = new StringBuilder
+    sb.append(s"${block.label}:\n")
+    sb.append(transcribeStatements(block.statements))
+    sb.append("\n")
+    sb.toString()
+  }
+
+  private def transcribeStatements(statements: mutable.ListBuffer[DragonStatement]): String = {
+    statements.map(statement => s"  ${statement.statementLlvm}").mkString("\n")
   }
 }

@@ -7,12 +7,14 @@ class CompilerCommandLine(args: List[String]) {
     val output = readOption("output")
     val llvmOnly = readFlag("llvm-only")
     val keepAll = readFlag("keep")
+    val run = readFlag("run")
 
     new CompilerCommandConfig(
       input = input,
       output = output,
       llvmOnly = llvmOnly,
-      keepAll = keepAll
+      keepAll = keepAll,
+      run = run
     )
   }
 
@@ -39,7 +41,8 @@ class CompilerCommandConfig(
   val input: String,
   val output: Option[String],
   val llvmOnly: Boolean,
-  val keepAll: Boolean
+  val keepAll: Boolean,
+  val run: Boolean
 ) {
   def inputFile: String = input.split('.').head match {
     case name if name.endsWith(".sr") => name

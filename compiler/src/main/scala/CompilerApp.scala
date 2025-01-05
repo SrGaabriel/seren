@@ -30,7 +30,7 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
     logger.log(LogLevel.ERROR, s"Lexing error: ${error.message}")
     sys.exit(1)
   })
-  val stream = TokenStream(result.right.get)
+  val stream = TokenStream(result.toOption.get)
 
   val parser: Parser = new DefaultParser
   val syntaxTree = parser.parse(stream)
@@ -52,7 +52,7 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
     directive = Directive(module = "root", subdirectories = List.empty)
   )
 
-  val tree = syntaxTree.right.get
+  val tree = syntaxTree.toOption.get
   val root = tree.root
   val typeEnvironment = new TypeEnvironment("main", root)
   val typeInference = new HardTypeInference
@@ -76,10 +76,22 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
 
   val llFileName = options.output.getOrElse(options.inputFile.replace(".sr", ".ll"))
   val llFile = io.writeFile(llFileName, llvmCode)
-  if (!options.llvmOnly) {
-    io.linkLlFileToExecutable(llFileName, llFileName.replace(".ll", ".exe"))
+  val compilationStatusCode = if !options.llvmOnly then
+    val compilationCode = io.linkLlFileToExecutable(llFileName, llFileName.replace(".ll", ".exe"))
     if (!options.keepAll) llFile.delete()
-  }
-  logger.lazyLog(LogLevel.INFO, "Compilation finished")
+    Some(compilationCode)
+  else None
   logger.dispatchAllQueuedLogs()
+
+  compilationStatusCode match
+    case Some(0) =>
+      logger.log(LogLevel.INFO, "Compilation finished successfully")
+      if options.run then
+        val programName = llFileName.replace(".ll", ".exe")
+        logger.log(LogLevel.INFO, s"Running program $programName as per request (--run flag)")
+        val exitCode = io.runExecutable(programName)
+        val level = if exitCode == 0 then LogLevel.INFO else LogLevel.ERROR
+        logger.log(level, s"Program $programName exited with code $exitCode")
+    case Some(code) => logger.log(LogLevel.ERROR, s"Compilation failed with code $code")
+    case _ => logger.log(LogLevel.INFO, "Compilation finished (LLVM only)")
 }

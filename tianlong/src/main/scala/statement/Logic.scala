@@ -1,7 +1,32 @@
 package me.gabriel.tianlong
 package statement
 
+import function.DragonFunctionBlock
 import struct.{DragonType, NumericalComparisonType, ValueReference}
+
+case class BranchStatement(
+  block: DragonFunctionBlock
+) extends TypedDragonStatement {
+  override val statementType: DragonType = DragonType.Void
+  override val memoryDependencies: List[ValueReference] = List.empty
+
+  override def valid: Boolean = true
+
+  override def statementLlvm: String = s"br label %${block.label}"
+}
+
+case class ConditionalBranchStatement(
+  condition: ValueReference,
+  trueBlock: DragonFunctionBlock,
+  falseBlock: DragonFunctionBlock
+) extends TypedDragonStatement {
+  override val statementType: DragonType = DragonType.Void
+  override val memoryDependencies: List[ValueReference] = List(condition)
+
+  override def valid: Boolean = condition.dragonType == DragonType.Int1
+
+  override def statementLlvm: String = s"br i1 ${condition.llvm}, label %${trueBlock.label}, label %${falseBlock.label}"
+}
 
 case class SignedIntegerComparisonStatement(
   left: ValueReference,

@@ -114,6 +114,7 @@ class DefaultParser extends Parser {
   }
 
   private def parseStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
+    println("I'm now parsing a statement. Next is " + stream.peekValid())
     stream.skipAndPeekValid().kind match {
       case TokenKind.Identifier => parseIdentifierStatement(stream)
       case TokenKind.If => parseIfStatement(stream)
@@ -160,7 +161,7 @@ class DefaultParser extends Parser {
       condition <- parseExpression(stream)
       thenBlock <- parseBlock(stream)
       elseBlock <- if (stream.peekValid().kind == TokenKind.Else) {
-        stream.next
+        stream.nextValid()
         parseBlock(stream).map(Some(_))
       } else {
         Right(None)
@@ -191,9 +192,10 @@ class DefaultParser extends Parser {
   }
 
   private def parseReturnStatement(stream: TokenStream): Either[ParsingError, ReturnNode] = {
+    println("Parsing return statement")
     for {
       returnToken <- consumeToken(stream, TokenKind.Return)
-      expression <- parseExpression(stream)
+      expression = parseExpression(stream).toOption
     } yield ReturnNode(returnToken, expression)
   }
 
@@ -369,7 +371,6 @@ class DefaultParser extends Parser {
         ignoreNewLines = ignoreNewLines
       )
 
-      // This is necessary because sometimes there'll be trailing delimiters (newline + end, for ex)
       val trailingPreventivePeek = stream.peekValid()
       if trailingPreventivePeek.kind == end then
         stream.nextValid()

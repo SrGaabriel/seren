@@ -11,14 +11,16 @@ struct Vector(
     planet :: string
 )
 
-fun main() :: int32 {
+fun main() {
     vector := %Vector(20, 19, 18i16, 17, 16i8, 15i16, 14i16, "Earth")
-    if 20+20 == 40 {
-        printf()
+    x := 40
+    if 20+20 == x {
+        printf("20+20 indeed equals %d!\n", x)
+        return
+    } else {
+        printf("20+20 does not equal %d!\n", x)
     }
-
     print_vector(vector)
-    ret 0
 }
 
 fun print_vector(vector :: Vector) {

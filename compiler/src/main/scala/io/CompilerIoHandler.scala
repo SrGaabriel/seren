@@ -10,7 +10,7 @@ class CompilerIoHandler {
     file
   }
 
-  def linkLlFileToExecutable(llFile: String, output: String): Unit = {
+  def linkLlFileToExecutable(llFile: String, output: String): Int = {
     val process = new ProcessBuilder("clang", llFile, "-o", output)
       .inheritIO()
       .start()
@@ -21,5 +21,12 @@ class CompilerIoHandler {
     val file = new java.io.File(name)
     val source = scala.io.Source.fromFile(file)
     source.mkString
+  }
+
+  def runExecutable(name: String): Int = {
+    val process = new ProcessBuilder(s"./$name")
+      .inheritIO()
+      .start()
+    process.waitFor()
   }
 }

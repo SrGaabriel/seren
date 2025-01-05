@@ -1,7 +1,7 @@
 package me.gabriel.tianlong
 
 import factory.FunctionFactory
-import function.DragonFunction
+import function.{DragonFunction, DragonFunctionBlock}
 import struct.{Dependency, DragonType, MemoryReference}
 
 import scala.collection.mutable
@@ -20,7 +20,7 @@ trait DragonModule {
         register = index + 1,
         dragonType = param
       )
-    ), returnType)
+    ), returnType, mutable.LinkedHashMap("entry" -> new DragonFunctionBlock("entry")))
     functions += function
     function
   }
