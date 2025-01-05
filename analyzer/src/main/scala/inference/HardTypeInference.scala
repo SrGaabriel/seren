@@ -2,13 +2,14 @@ package me.gabriel.seren.analyzer
 package inference
 
 import external.ModuleManager
+import LazyType.*
 
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.tree.*
 import me.gabriel.seren.logging.LogLevel
 import me.gabriel.seren.logging.tracing.Traceable
 
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 
 class HardTypeInference extends TypeInference, Traceable {
   override def traverseBottomUp(
@@ -25,7 +26,7 @@ class HardTypeInference extends TypeInference, Traceable {
         )
         block.createChild(function)
       case struct: StructDeclarationNode =>
-        val fields = scala.collection.immutable.ListMap(struct.fields.map(f => f.name -> f.nodeType).to(mutable.LinkedHashMap).toSeq: _*)
+        val fields = immutable.ListMap(struct.fields.map(f => f.name -> f.nodeType).to(mutable.LinkedHashMap).toSeq: _*)
         module.addStruct(
           name = struct.name,
           fields = fields
@@ -49,10 +50,11 @@ class HardTypeInference extends TypeInference, Traceable {
     block: LazySymbolBlock,
     node: TypedSyntaxTreeNode
   ): LazyType = {
+    def getChildType(child: TypedSyntaxTreeNode) = block.lazyDefinitions(child)
     node match {
       case functionNode: FunctionDeclarationNode =>
         block.lazyDefine(functionNode, TypeFunction(
-          functionNode.parameters.map(p => processTypedNode(block, p)),
+          functionNode.parameters.map(getChildType),
           TypeLiteral(functionNode.nodeType.returnType)
         ))
 
@@ -60,7 +62,7 @@ class HardTypeInference extends TypeInference, Traceable {
         block.lazyDefine(referenceNode, TypeVariable(referenceNode.name))
 
       case structAccessNode: StructFieldAccessNode =>
-        val structType = processTypedNode(block, structAccessNode.struct)
+        val structType = getChildType(structAccessNode.struct)
         block.lazyDefine(structAccessNode, TypeAccess(structType, structAccessNode.fieldName))
 
       case FunctionParameterNode(_, name, nodeType) =>
@@ -68,14 +70,12 @@ class HardTypeInference extends TypeInference, Traceable {
         block.lazyRegisterSymbol(name, TypeLiteral(nodeType))
 
       case assignmentNode: AssignmentNode =>
-        val bodyType = processTypedNode(block, assignmentNode.value)
+        val bodyType = getChildType(assignmentNode.value)
         block.lazyDefine(assignmentNode, bodyType)
         block.lazyRegisterSymbol(assignmentNode.name, bodyType)
 
       case callNode: FunctionCallNode =>
-        block.lazyDefine(callNode, TypeCall(callNode.name, callNode.arguments.map(
-          argument => processTypedNode(block, argument)
-        )))
+        block.lazyDefine(callNode, TypeCall(callNode.name, callNode.arguments.map(getChildType)))
 
       case _ =>
         if (node.nodeType == Type.Unknown) {

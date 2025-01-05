@@ -20,6 +20,7 @@ enum TokenKind:
   case Enum
   case This
   case Identifier
+  case If, Else
   case Return
   case Multiply
   case Vararg
@@ -27,6 +28,7 @@ enum TokenKind:
   case Pipe
   case Comma
   case Modulo
+  case Equal
   case Colon
   case Dot
   case LeftBrace

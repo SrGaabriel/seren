@@ -2,6 +2,7 @@ package me.gabriel.seren.analyzer
 package inference
 
 import external.ModuleManager
+import LazyType.*
 
 import me.gabriel.seren.frontend.parser.Type
 import me.gabriel.seren.frontend.parser.Type.{UnknownIdentifier, UnknownThis}
@@ -44,7 +45,8 @@ object TypeSynthesizer extends Traceable {
           log(LogLevel.ERROR, s"Could not infer type for node $node (lazyType=$inferredLazyType)")
         }
 
-        typedNode.nodeType = finalType
+        if finalType != typedNode.nodeType then
+          typedNode.nodeType = finalType
       case _ =>
     }
   }

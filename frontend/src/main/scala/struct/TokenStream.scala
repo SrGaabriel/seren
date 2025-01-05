@@ -10,16 +10,27 @@ class TokenStream(tokens: List[Token]):
 
   def peekNext: Token = tokens(index + 1)
 
-  @tailrec final def peekValid(
+  final def peekValid(
+    ignoreWhitespaces: Boolean = true,
+    ignoreNewLines: Boolean = true
+  ): Token = {
+    var start = index
+    while tokens(start).kind == TokenKind.Whitespace && ignoreWhitespaces ||
+      tokens(start).kind == TokenKind.NewLine && ignoreNewLines do
+      start += 1
+    tokens(start)
+  }
+
+  @tailrec final def skipAndPeekValid(
     ignoreWhitespaces: Boolean = true,
     ignoreNewLines: Boolean = true
   ): Token = tokens(index) match {
     case Token(_, TokenKind.Whitespace, _) if ignoreWhitespaces =>
       index += 1
-      peekValid(ignoreWhitespaces, ignoreNewLines)
+      skipAndPeekValid(ignoreWhitespaces, ignoreNewLines)
     case Token(_, TokenKind.NewLine, _) if ignoreNewLines =>
       index += 1
-      peekValid(ignoreWhitespaces, ignoreNewLines)
+      skipAndPeekValid(ignoreWhitespaces, ignoreNewLines)
     case _ =>
       tokens(index)
   }
@@ -51,7 +62,7 @@ class TokenStream(tokens: List[Token]):
     ignoreWhitespaces: Boolean = true,
     ignoreNewLines: Boolean = true
   ): Token =
-    val token = peekValid(ignoreWhitespaces, ignoreNewLines)
+    val token = skipAndPeekValid(ignoreWhitespaces, ignoreNewLines)
     index += 1
     token
 

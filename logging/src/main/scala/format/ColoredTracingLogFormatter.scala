@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 class ColoredTracingLogFormatter extends LogFormatter {
   var dateTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
   var currentBiggestIndentation: Int = 0
-  var alignmentThreshold: Int = 8
+  var alignmentThreshold: Int = 6
 
   override def format(context: LoggingContext): String =
     val levelColor = context.level match

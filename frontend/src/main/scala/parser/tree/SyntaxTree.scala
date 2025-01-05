@@ -195,3 +195,25 @@ class EnumVariantNode(
 
   override def toString: String = s"EnumVariantNode($name, $types)"
 }
+
+case class EqualityNode(
+  token: Token,
+  left: TypedSyntaxTreeNode,
+  right: TypedSyntaxTreeNode
+) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List(left, right)
+  val nodeType: Type = Type.Boolean
+
+  override def toString: String = s"EqualsNode($left, $right)"
+}
+
+case class IfNode(
+  token: Token,
+  condition: TypedSyntaxTreeNode,
+  block: BlockNode,
+  elseBlock: Option[BlockNode]
+) extends SyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List(condition, block) ++ elseBlock
+
+  override def toString: String = s"IfNode($condition, $block, $elseBlock)"
+}

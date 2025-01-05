@@ -17,7 +17,7 @@ class DefaultParser extends Parser {
   }
 
   private def parseTopLevelDeclaration(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
-    val peek = stream.peekValid()
+    val peek = stream.skipAndPeekValid()
     peek.kind match {
       case TokenKind.Enum => parseEnum(stream)
       // todo: improve this
@@ -99,13 +99,24 @@ class DefaultParser extends Parser {
   }
 
   private def parseExpression(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
-    // TODO: implement equals check here
-    parseNumericExpression(stream)
+    val leftExpr = parseNumericExpression(stream)
+    val current = stream.peekValid()
+    if (current.kind == TokenKind.Equal) {
+      val assignment = for {
+        left <- leftExpr
+        _ <- consumeToken(stream, TokenKind.Equal)
+        rightExpr <- parseExpression(stream)
+      } yield EqualityNode(current, left, rightExpr)
+      assignment
+    } else {
+      leftExpr
+    }
   }
 
   private def parseStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
-    stream.peekValid().kind match {
+    stream.skipAndPeekValid().kind match {
       case TokenKind.Identifier => parseIdentifierStatement(stream)
+      case TokenKind.If => parseIfStatement(stream)
       case TokenKind.Return => parseReturnStatement(stream)
       case _ => parseExpression(stream)
     }
@@ -141,6 +152,20 @@ class DefaultParser extends Parser {
         })
       )
     }
+  }
+
+  private def parseIfStatement(stream: TokenStream): Either[ParsingError, IfNode] = {
+    for {
+      ifToken <- consumeToken(stream, TokenKind.If)
+      condition <- parseExpression(stream)
+      thenBlock <- parseBlock(stream)
+      elseBlock <- if (stream.peekValid().kind == TokenKind.Else) {
+        stream.next
+        parseBlock(stream).map(Some(_))
+      } else {
+        Right(None)
+      }
+    } yield IfNode(ifToken, condition, thenBlock, elseBlock)
   }
 
   private def parseIdentifierAccess(stream: TokenStream, reference: ReferenceNode): Either[ParsingError, TypedSyntaxTreeNode] = {
@@ -212,7 +237,7 @@ class DefaultParser extends Parser {
   }
 
   private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
-    val peek = stream.peekValid()
+    val peek = stream.skipAndPeekValid()
     peek.kind match {
       case TokenKind.NumberLiteral(_) => parseNumberLiteral(stream)
       case TokenKind.StringLiteral => parseString(stream)
@@ -305,24 +330,24 @@ class DefaultParser extends Parser {
     ignoreWhitespace: Boolean = true,
     ignoreNewLines: Boolean = true
   ): Either[ParsingError, List[T]] = {
-    val elements = collection.mutable.ListBuffer.empty[T]
+    val nodes = collection.mutable.ListBuffer.empty[T]
     while (stream.peek.kind != TokenKind.EOF) {
-      val element = parser(stream)
-      element match {
+      val node = parser(stream)
+      node match
         case Left(error) => return Left(error)
-        case Right(e) => elements += e
-      }
+        case Right(n) => nodes += n
       val peek = stream.peekValid(
         ignoreWhitespaces = ignoreWhitespace,
         ignoreNewLines = ignoreNewLines
       )
-      if (peek.kind == delimiter) {
-        stream.next
-      } else if (peek.kind != delimiter) {
-        return Right(elements.toList)
-      }
+      peek.kind match
+        case del if del == delimiter => stream.nextValid(
+          ignoreWhitespaces = ignoreWhitespace,
+          ignoreNewLines = ignoreNewLines
+        )
+        case TokenKind.EOF | _ => return Right(nodes.toList)
     }
-    Right(elements.toList)
+    Right(nodes.toList)
   }
 
   private def parseSequence[T](
@@ -334,30 +359,39 @@ class DefaultParser extends Parser {
     ignoreNewLines: Boolean = true
   ): Either[ParsingError, List[T]] = {
     val nodes = collection.mutable.ListBuffer.empty[T]
-    while (stream.peek.kind != end && stream.peek.kind != TokenKind.EOF) {
+    while (stream.peek.kind != end) {
       val node = parser(stream)
-      node match {
+      node match
         case Left(error) => return Left(error)
         case Right(n) => nodes += n
-      }
       val peek = stream.peekValid(
         ignoreWhitespaces = ignoreWhitespace,
         ignoreNewLines = ignoreNewLines
       )
-      if (peek.kind == delimiter) {
-        stream.nextValid(
+
+      // This is necessary because sometimes there'll be trailing delimiters (newline + end, for ex)
+      val trailingPreventivePeek = stream.peekValid()
+      if trailingPreventivePeek.kind == end then
+        stream.nextValid()
+        return Right(nodes.toList)
+      peek.kind match
+        case del if del == delimiter => stream.nextValid(
           ignoreWhitespaces = ignoreWhitespace,
           ignoreNewLines = ignoreNewLines
         )
-      } else if (peek.kind != end) {
-        return Left(UnterminatedSequenceError(peek))
-      }
+        case ending if ending == end =>
+          val before = stream.peekValid()
+          stream.nextValid()
+          return Right(nodes.toList)
+        case TokenKind.EOF | _ => return Left(UnterminatedSequenceError(peek))
     }
-    // fallback
     if (stream.peek.kind == TokenKind.EOF) {
       return Left(UnterminatedSequenceError(stream.peek))
     }
-    stream.next
+    stream.nextValid(
+      ignoreWhitespaces = ignoreWhitespace,
+      ignoreNewLines = ignoreNewLines
+    )
     Right(nodes.toList)
   }
 
@@ -366,7 +400,7 @@ class DefaultParser extends Parser {
     kind: TokenKind,
     ignoreWhitespace: Boolean = true
   ): Either[ParsingError, Token] = {
-    val token = stream.peekValid(ignoreWhitespaces = ignoreWhitespace)
+    val token = stream.skipAndPeekValid(ignoreWhitespaces = ignoreWhitespace)
     if (token.kind == kind) {
       stream.next
       Right(token)
@@ -380,7 +414,7 @@ class DefaultParser extends Parser {
     tokens: Array[TokenKind],
     ignoreWhitespace: Boolean = true
   ): Either[ParsingError, Token] = {
-    val token = stream.peekValid(ignoreWhitespaces = ignoreWhitespace)
+    val token = stream.skipAndPeekValid(ignoreWhitespaces = ignoreWhitespace)
     if (tokens.contains(token.kind)) {
       stream.next
       Right(token)

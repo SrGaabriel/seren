@@ -1,6 +1,8 @@
 package me.gabriel.seren.analyzer
 package inference
 
+import LazyType.*
+
 sealed trait TypeConstraint {
   def left: LazyType
 

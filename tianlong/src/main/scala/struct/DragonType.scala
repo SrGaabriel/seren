@@ -15,6 +15,8 @@ object DragonType {
 
   case object UInt64 extends DragonType("u64", bytes = 8)
 
+  case object Int1 extends DragonType("i1", bytes = 1)
+
   case object Int8 extends DragonType("i8", bytes = 1)
 
   case object Int16 extends DragonType("i16", bytes = 2)

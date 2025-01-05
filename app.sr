@@ -13,6 +13,10 @@ struct Vector(
 
 fun main() :: int32 {
     vector := %Vector(20, 19, 18i16, 17, 16i8, 15i16, 14i16, "Earth")
+    if 20+20 == 40 {
+        printf()
+    }
+
     print_vector(vector)
     ret 0
 }

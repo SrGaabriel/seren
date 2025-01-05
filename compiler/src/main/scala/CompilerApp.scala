@@ -1,5 +1,6 @@
 package me.gabriel.seren.compiler
 
+import formatter.printError
 import io.{CompilerCommandLine, CompilerIoHandler}
 
 import me.gabriel.seren.analyzer.TypeEnvironment
@@ -8,7 +9,7 @@ import me.gabriel.seren.analyzer.impl.DefaultSemanticAnalysisManager
 import me.gabriel.seren.analyzer.inference.LazySymbolBlock.toLazySymbolBlock
 import me.gabriel.seren.analyzer.inference.{HardTypeInference, LazySymbolBlock, TypeSynthesizer}
 import me.gabriel.seren.frontend.lexer.{DefaultLexer, Lexer}
-import me.gabriel.seren.frontend.parser.{DefaultParser, Parser, Type}
+import me.gabriel.seren.frontend.parser.{DefaultParser, Parser}
 import me.gabriel.seren.frontend.struct.TokenStream
 import me.gabriel.seren.llvm.SerenDragonCompiler
 import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
@@ -34,7 +35,16 @@ import me.gabriel.seren.logging.{LogLevel, createLogger, setupTerminalLogging}
   val parser: Parser = new DefaultParser
   val syntaxTree = parser.parse(stream)
   syntaxTree.left.foreach(error => {
-    logger.log(LogLevel.ERROR, s"Parsing error: ${error.message}")
+    printError(
+      logger,
+      options.inputFile,
+      sourceCode,
+      "PARSING",
+      error.token.position,
+      error.token.position,
+      error.message
+    )
+    logger.log(LogLevel.ERROR, error)
     sys.exit(1)
   })
 

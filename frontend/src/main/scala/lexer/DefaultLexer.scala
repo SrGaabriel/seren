@@ -52,10 +52,12 @@ class DefaultLexer extends Lexer {
             case _ =>
               addToken(":", TokenKind.Colon)
           }
+        case '=' if input(position + 1) == '=' =>
+          addToken("==", TokenKind.Equal)
         case '.' if input.drop(position).startsWith("...") =>
           addToken("...", TokenKind.Vararg)
         case '.' => addToken(".", TokenKind.Dot)
-        case '/' if input.drop(position).startsWith("//") =>
+        case '/' if input(position + 1) == '/' =>
           val comment = input.drop(position).takeWhile(_ != '\n')
           position += comment.length
         case '/' => addToken("/", TokenKind.Divide)
@@ -81,6 +83,8 @@ class DefaultLexer extends Lexer {
           val tokenKind = identifier match {
             case "let" => TokenKind.Let
             case "fun" => TokenKind.Function
+            case "if" => TokenKind.If
+            case "else" => TokenKind.Else
             case "ret" => TokenKind.Return
             case "any" => TokenKind.AnyType
             case "this" => TokenKind.This

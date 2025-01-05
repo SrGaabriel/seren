@@ -4,8 +4,10 @@ package effect
 import scala.language.implicitConversions
 
 object ConsoleColors extends Enumeration {
-  protected case class AnsiColorCode(code: String) extends super.Val {
+  case class AnsiColorCode(code: String) extends super.Val {
     override def toString(): String = code
+
+    def paint(text: String): String = s"$code$text${ConsoleColors.RESET}"
   }
 
   implicit def valueToColor(x: Value): AnsiColorCode = x.asInstanceOf[AnsiColorCode]
@@ -63,6 +65,8 @@ object ConsoleColors extends Enumeration {
   val REVERSED: AnsiColorCode = AnsiColorCode("\u001b[7m")
   val HIDDEN: AnsiColorCode = AnsiColorCode("\u001b[8m")
   val STRIKETHROUGH: AnsiColorCode = AnsiColorCode("\u001b[9m")
+
+  val READABLE_GRAY: AnsiColorCode = colorRGB(114,114,114)
 
   // Helper methods for 8-bit colors (256 colors)
   def color256(n: Int): AnsiColorCode = {

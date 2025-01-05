@@ -116,6 +116,13 @@ class FunctionFactory(
   ): InsertValueStatement = {
     InsertValueStatement(struct, value, index)
   }
+  
+  def compareSignedIntegers(
+    left: ValueReference,
+    right: ValueReference,
+    op: NumericalComparisonType
+  ): SignedIntegerComparisonStatement =
+    SignedIntegerComparisonStatement(left, right, op)
 
   def `return`(value: ValueReference): FunctionFactory = {
     statement(ReturnStatement(value))

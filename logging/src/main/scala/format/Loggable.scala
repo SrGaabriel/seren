@@ -24,6 +24,7 @@ implicit object LoggableInt extends Loggable[Int] {
 
 implicit object LoggableException extends Loggable[Throwable] {
   override def writeTo(t: Throwable, stream: OutputStream): Unit =
-    stream.write(t.getMessage.getBytes)
+    if t.getMessage != null then
+      stream.write(t.getMessage.getBytes)
     t.printStackTrace(new java.io.PrintStream(stream))
 }

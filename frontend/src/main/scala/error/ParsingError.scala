@@ -3,7 +3,7 @@ package error
 
 import struct.{Token, TokenKind}
 
-sealed trait ParsingError extends Error {
+sealed trait ParsingError extends Throwable {
   val message: String
   val token: Token
 }

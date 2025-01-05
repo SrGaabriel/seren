@@ -151,6 +151,7 @@ class TianlongCompilerSession(
       case call: FunctionCallNode => generateCall(block, function, factory, call)
       case instantiation: StructInstantiationNode => generateStructInstantiation(block, function, factory, instantiation)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
+      case equality: EqualityNode => generateEquality(block, function, factory, equality)
       case _ =>
         log(LogLevel.ERROR, s"Unknown value: $node")
         None
@@ -234,6 +235,28 @@ class TianlongCompilerSession(
       ).get
     )
     Some(returns)
+  }
+  
+  def generateEquality(
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: FunctionFactory,
+    equality: EqualityNode
+  ): Option[ValueReference] = {
+    val left = generateValue(
+      block = block,
+      function = function,
+      factory = factory,
+      node = equality.left
+    ).get
+    val right = generateValue(
+      block = block,
+      function = function,
+      factory = factory,
+      node = equality.right
+    ).get
+    val comparison = factory.compareSignedIntegers(left, right, NumericalComparisonType.Equal)
+    Some(factory.assign(comparison))
   }
 
   def generateStructFieldAccess(
