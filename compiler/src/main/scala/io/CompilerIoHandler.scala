@@ -10,12 +10,12 @@ class CompilerIoHandler {
     file
   }
 
-  def linkLlFileToExecutable(llFile: String, output: String): Int = {
-    val process = new ProcessBuilder("clang", llFile, "-o", output)
+  def linkLlFileToExecutable(output: String, llFiles: String*): Int =
+    val seq = List("clang", "-o", output) ++ llFiles
+    val process = new ProcessBuilder(seq: _*)
       .inheritIO()
       .start()
     process.waitFor()
-  }
 
   def readFile(name: String): String = {
     val file = new java.io.File(name)

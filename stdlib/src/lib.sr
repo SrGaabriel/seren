@@ -1,0 +1,6 @@
+struct Vector(
+    first :: int32*,
+    length :: usize,
+    capacity :: usize
+)
+

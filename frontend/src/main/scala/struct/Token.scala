@@ -18,11 +18,12 @@ enum TokenKind:
   case Function
   case Struct
   case Enum
+  case Null
   case This
   case Identifier
   case If, Else
   case Return
-  case Multiply
+  case Asterisk
   case Vararg
   case Divide
   case Pipe
@@ -46,6 +47,7 @@ enum TokenKind:
   case UInt16Type
   case UInt32Type
   case UInt64Type
+  case UsizeType
   case Float32Type
   case Float64Type
   case RightBrace

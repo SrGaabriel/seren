@@ -119,3 +119,15 @@ case class InsertValueStatement(
 
   override def statementLlvm: String = s"insertvalue ${struct.dragonType.llvm} ${struct.llvm}, ${value.dragonType.llvm} ${value.llvm}, $index"
 }
+
+case class NullPointerStatement(
+  pointer: DragonType
+) extends TypedDragonStatement {
+  override val memoryDependencies: List[ValueReference] = List.empty
+
+  override def valid: Boolean = pointer.isPointer
+
+  override val statementType: DragonType = pointer
+
+  override def statementLlvm: String = s"${pointer.llvm} null"
+}

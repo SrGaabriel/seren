@@ -217,3 +217,10 @@ case class IfNode(
 
   override def toString: String = s"IfNode($condition, $block, $elseBlock)"
 }
+
+case class NullNode(token: Token) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List.empty
+  var nodeType: Type = Type.Unknown
+
+  override def toString: String = s"NullNode"
+}

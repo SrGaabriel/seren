@@ -226,7 +226,7 @@ class DefaultParser extends Parser {
 
   private def parseTerm(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
     var left = parseFactor(stream)
-    while (stream.peek.kind == TokenKind.Multiply || stream.peek.kind == TokenKind.Divide) {
+    while (stream.peek.kind == TokenKind.Asterisk || stream.peek.kind == TokenKind.Divide) {
       val opToken = stream.next
       val op = convertTokenKindToBinaryOp(opToken.kind)
       val right = parseFactor(stream)
@@ -241,6 +241,9 @@ class DefaultParser extends Parser {
   private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
     val peek = stream.skipAndPeekValid()
     peek.kind match {
+      case TokenKind.Null =>
+        stream.next
+        Right(NullNode(peek))
       case TokenKind.NumberLiteral(_) => parseNumberLiteral(stream)
       case TokenKind.StringLiteral => parseString(stream)
       case TokenKind.Modulo => parseInstantiation(stream)
@@ -426,38 +429,34 @@ class DefaultParser extends Parser {
 
   private def parseType(stream: TokenStream, isC: Boolean = false): Either[ParsingError, Type] = {
     val token = stream.nextValid()
-    if (isC) {
-      stream.peek.kind match {
-        case TokenKind.Multiply =>
-          stream.next
-          return Right(Type.CType(token.value + "*"))
-        case _ => return Right(Type.CType(token.value))
-      }
-    }
     val base = token.kind match {
+      case _ if isC => Right(Type.CType(token.value))
       case TokenKind.VoidType => Right(Type.Void)
       case TokenKind.Int8Type => Right(Type.Byte)
       case TokenKind.Int16Type => Right(Type.Short)
       case TokenKind.Int32Type => Right(Type.Int)
       case TokenKind.Int64Type => Right(Type.Long)
+      case TokenKind.UsizeType => Right(Type.Usize)
       case TokenKind.StringType => Right(Type.String)
       case TokenKind.This => Right(Type.UnknownThis)
       case TokenKind.AnyType => Right(Type.Any)
       case TokenKind.Identifier => Right(Type.UnknownIdentifier(token.value))
       case _ => Left(InvalidTypeDeclarationError(token))
     }
-    if (stream.peek.kind == TokenKind.Vararg) {
-      stream.next
-      Right(Type.Vararg(base.toOption.get))
-    } else {
-      base
-    }
+    base -> stream.peek.kind match
+      case (Right(base), TokenKind.Vararg) =>
+        stream.next
+        Right(Type.Vararg(base))
+      case (Right(base), TokenKind.Asterisk) =>
+        stream.next
+        Right(Type.Pointer(base))
+      case _ => base
   }
 
   private def convertTokenKindToBinaryOp(tokenKind: TokenKind): BinaryOp = tokenKind match {
     case TokenKind.Plus => BinaryOp.Plus
     case TokenKind.Minus => BinaryOp.Minus
-    case TokenKind.Multiply => BinaryOp.Multiply
+    case TokenKind.Asterisk => BinaryOp.Multiply
     case TokenKind.Divide => BinaryOp.Divide
     case _ => throw new IllegalArgumentException(s"Invalid binary operation: $tokenKind")
   }

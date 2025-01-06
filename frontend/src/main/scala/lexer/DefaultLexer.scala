@@ -32,7 +32,7 @@ class DefaultLexer extends Lexer {
           addToken("\n", TokenKind.NewLine)
         case '+' => addToken("+", TokenKind.Plus)
         case '-' => addToken("-", TokenKind.Minus)
-        case '*' => addToken("*", TokenKind.Multiply)
+        case '*' => addToken("*", TokenKind.Asterisk)
         case '(' => addToken("(", TokenKind.LeftParenthesis)
         case ')' => addToken(")", TokenKind.RightParenthesis)
         case '{' => addToken("{", TokenKind.LeftBrace)
@@ -93,9 +93,11 @@ class DefaultLexer extends Lexer {
             case "int16" => TokenKind.Int16Type
             case "int32" => TokenKind.Int32Type
             case "int64" => TokenKind.Int64Type
+            case "usize" => TokenKind.UsizeType
             case "struct" => TokenKind.Struct
             case "string" => TokenKind.StringType
             case "enum" => TokenKind.Enum
+            case "null" => TokenKind.Null
             case "external" => TokenKind.External
             case _ => TokenKind.Identifier
           }
@@ -146,7 +148,7 @@ class DefaultLexer extends Lexer {
       TokenKind.Comma,
       TokenKind.Plus,
       TokenKind.Minus,
-      TokenKind.Multiply,
+      TokenKind.Asterisk,
       TokenKind.Divide,
       TokenKind.Assign,
       TokenKind.Let,
@@ -163,7 +165,7 @@ class DefaultLexer extends Lexer {
       TokenKind.Comma,
       TokenKind.Plus,
       TokenKind.Minus,
-      TokenKind.Multiply,
+      TokenKind.Asterisk,
       TokenKind.Divide,
       TokenKind.SemiColon,
       TokenKind.Function,

@@ -27,6 +27,10 @@ trait StatementHolder {
     this
   }
 
+  def nullPointer(pointerType: DragonType): NullPointerStatement = {
+    NullPointerStatement(pointerType)
+  }
+
   def createBlock(): BlockFactory = {
     val name = s"block_${functionFactory.blockRegister}"
     functionFactory.blockRegister += 1
@@ -122,7 +126,6 @@ trait StatementHolder {
 
   def newString(text: String): MemoryReference = {
     val allocated = assign(allocate(DragonType.Int8, text.length + 1))
-    // maps chars to their ascii values
     val constants = text.map(char => ConstantReference.Number(char.toInt.toString, DragonType.Int8)).toList
     bulkStore(constants, allocated)
     allocated

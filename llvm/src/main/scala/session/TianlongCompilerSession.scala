@@ -1,7 +1,8 @@
 package me.gabriel.seren.llvm
 package session
 
-import `type`.{allocationDragon, referenceDragon}
+import target.CompilationTarget
+import util.IterableExtensions.IterableLCM
 import util.{PaddingSorter, convertControlChars}
 
 import me.gabriel.seren.analyzer.{SymbolBlock, TypeEnvironment}
@@ -12,7 +13,7 @@ import me.gabriel.seren.frontend.struct.{BinaryOp, FunctionModifier}
 import me.gabriel.seren.logging.LogLevel
 import me.gabriel.seren.logging.tracing.Traceable
 import me.gabriel.tianlong.TianlongModule
-import me.gabriel.tianlong.factory.{FunctionFactory, StatementHolder}
+import me.gabriel.tianlong.factory.StatementHolder
 import me.gabriel.tianlong.statement.*
 import me.gabriel.tianlong.struct.*
 import me.gabriel.tianlong.struct.DragonType.Int32
@@ -21,7 +22,8 @@ import scala.collection.mutable
 
 class TianlongCompilerSession(
   val syntaxTree: SyntaxTree,
-  val typeEnvironment: TypeEnvironment
+  val typeEnvironment: TypeEnvironment,
+  val target: CompilationTarget
 ) extends Traceable {
   val module = TianlongModule()
   val memoryReferences: mutable.Map[SymbolBlock, mutable.HashMap[String, MemoryReference]] = mutable.HashMap()
@@ -176,6 +178,7 @@ class TianlongCompilerSession(
       case instantiation: StructInstantiationNode => generateStructInstantiation(block, function, factory, instantiation)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case equality: EqualityNode => generateEquality(block, function, factory, equality)
+      case `null`: NullNode => generateNull(factory, `null`)
       case _ =>
         log(LogLevel.ERROR, s"Unknown value: $node")
         None
@@ -275,6 +278,12 @@ class TianlongCompilerSession(
 
     None
   }
+
+  def generateNull(
+    factory: StatementHolder,
+    node: NullNode
+  ): Option[MemoryReference] =
+    Some(factory.assign(factory.nullPointer(node.nodeType.referenceDragon)))
 
   def generateReturn(
     block: SymbolBlock,
@@ -445,6 +454,35 @@ class TianlongCompilerSession(
     memoryReferences.get(block) match {
       case Some(references) => references(name) = memory
       case None => memoryReferences(block) = mutable.HashMap(name -> memory)
+    }
+  }
+
+  extension (serenType: Type) {
+    def allocationDragon: DragonType = serenType match {
+      case Type.Byte => DragonType.Int8
+      case Type.Short => DragonType.Int16
+      case Type.Int => DragonType.Int32
+      case Type.Long => DragonType.Int64
+      case Type.Void => DragonType.Void
+      case Type.Usize => target.pointerSize match
+        case 8 => DragonType.Int8
+        case 16 => DragonType.Int16
+        case 32 => DragonType.Int32
+        case 64 => DragonType.Int64
+      case Type.String => DragonType.Array(DragonType.Int8, 0)
+      case Type.Pointer(base) => DragonType.ContextualPointer(base.allocationDragon)
+      case Type.CType(name) => DragonType.Custom(name)
+      case Type.Vararg(_) => DragonType.Vararg(None)
+      case Type.Struct(name, fields) => DragonType.Struct(
+        name,
+        fields.values.map(_.allocationDragon.bytes).lcmOfIterable
+      )
+      case _ => throw new Exception(s"Unsupported LLVM type $serenType")
+    }
+    def referenceDragon: DragonType = serenType match {
+      case Type.String => DragonType.ContextualPointer(DragonType.Int8)
+      case Type.Struct(_, _) => DragonType.ContextualPointer(allocationDragon)
+      case _ => allocationDragon
     }
   }
 }

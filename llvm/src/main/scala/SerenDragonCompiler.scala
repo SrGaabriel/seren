@@ -1,6 +1,7 @@
 package me.gabriel.seren.llvm
 
 import session.TianlongCompilerSession
+import target.CompilationTarget
 
 import me.gabriel.seren.analyzer.TypeEnvironment
 import me.gabriel.seren.frontend.parser.tree.SyntaxTree
@@ -11,9 +12,10 @@ class SerenDragonCompiler {
 
   def compile(
     tree: SyntaxTree,
-    typeEnvironment: TypeEnvironment
+    typeEnvironment: TypeEnvironment,
+    target: CompilationTarget
   ): String = {
-    val session = new TianlongCompilerSession(tree, typeEnvironment)
+    val session = new TianlongCompilerSession(tree, typeEnvironment, target)
     session.generateTree()
     val module = session.finish()
     transcriber.transcribe(module)
