@@ -84,6 +84,7 @@ class DefaultLexer extends Lexer {
             case "let" => TokenKind.Let
             case "fun" => TokenKind.Function
             case "if" => TokenKind.If
+            case "as" => TokenKind.As
             case "else" => TokenKind.Else
             case "return" => TokenKind.Return
             case "any" => TokenKind.AnyType

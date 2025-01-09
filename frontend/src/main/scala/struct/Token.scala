@@ -25,6 +25,7 @@ enum TokenKind:
   case Return
   case Asterisk
   case Vararg
+  case As
   case Divide
   case Pipe
   case Comma

@@ -67,6 +67,14 @@ class TokenStream(tokens: List[Token]):
     token
 
   def hasNext: Boolean = index < tokens.length
+  
+  def countIndent: Int =
+    var indent = 0
+    var pos = index
+    while tokens(pos).kind == TokenKind.Whitespace do
+      indent += tokens(pos).value.length
+      pos += 1
+    indent
 
   override def toString: String = tokens.drop(index).mkString(" ")
 end TokenStream

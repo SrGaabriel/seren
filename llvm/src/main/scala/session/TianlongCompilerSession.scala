@@ -178,6 +178,7 @@ class TianlongCompilerSession(
       case instantiation: StructInstantiationNode => generateStructInstantiation(block, function, factory, instantiation)
       case access: StructFieldAccessNode => generateStructFieldAccess(block, function, factory, access)
       case equality: EqualityNode => generateEquality(block, function, factory, equality)
+      case cast: CastNode => generateCast(block, function, factory, cast)
       case `null`: NullNode => generateNull(factory, `null`)
       case _ =>
         log(LogLevel.ERROR, s"Unknown value: $node")
@@ -282,8 +283,8 @@ class TianlongCompilerSession(
   def generateNull(
     factory: StatementHolder,
     node: NullNode
-  ): Option[MemoryReference] =
-    Some(factory.assign(factory.nullPointer(node.nodeType.referenceDragon)))
+  ): Option[ValueReference] =
+    Some(ConstantReference.Null(node.nodeType.referenceDragon))
 
   def generateReturn(
     block: SymbolBlock,
@@ -328,6 +329,28 @@ class TianlongCompilerSession(
     val comparison = factory.compareSignedIntegers(left, right, NumericalComparisonType.Equal)
     Some(factory.assign(comparison))
   }
+
+  def generateCast(
+    block: SymbolBlock,
+    function: FunctionDeclarationNode,
+    factory: StatementHolder,
+    node: CastNode
+  ): Option[ValueReference] =
+    val previousType = node.expression match {
+      case `null`: NullNode => DragonType.ContextualPointer(DragonType.Int8)
+      case _ => node.expression.nodeType.referenceDragon
+    }
+
+    // todo: remove when we have a decent type inference
+    node.expression.nodeType = node.nodeType
+    val value = generateValue(
+      block = block,
+      function = function,
+      factory = factory,
+      node = node.expression
+    ).get
+    val cast = factory.bitcast(value, previousType, node.nodeType.referenceDragon)
+    Some(factory.assign(cast))
 
   def generateStructFieldAccess(
     block: SymbolBlock,

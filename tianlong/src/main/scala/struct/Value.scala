@@ -25,6 +25,12 @@ sealed abstract class ConstantReference(
 ) extends ValueReference
 
 object ConstantReference {
+  case class Null(
+    override val dragonType: DragonType
+  ) extends ConstantReference(dragonType) {
+    override def llvm: String = "null"
+  }
+
   case class Number(
     number: String,
     override val dragonType: DragonType

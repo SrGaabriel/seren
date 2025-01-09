@@ -27,10 +27,6 @@ trait StatementHolder {
     this
   }
 
-  def nullPointer(pointerType: DragonType): NullPointerStatement = {
-    NullPointerStatement(pointerType)
-  }
-
   def createBlock(): BlockFactory = {
     val name = s"block_${functionFactory.blockRegister}"
     functionFactory.blockRegister += 1

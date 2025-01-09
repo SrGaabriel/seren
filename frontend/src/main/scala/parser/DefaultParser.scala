@@ -114,7 +114,6 @@ class DefaultParser extends Parser {
   }
 
   private def parseStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
-    println("I'm now parsing a statement. Next is " + stream.peekValid())
     stream.skipAndPeekValid().kind match {
       case TokenKind.Identifier => parseIdentifierStatement(stream)
       case TokenKind.If => parseIfStatement(stream)
@@ -122,7 +121,7 @@ class DefaultParser extends Parser {
       case _ => parseExpression(stream)
     }
   }
-
+  
   private def parseIdentifierStatement(stream: TokenStream): Either[ParsingError, SyntaxTreeNode] = {
     if (stream.peekNextValid().kind == TokenKind.Assign) {
       return parseAssignment(stream)
@@ -240,7 +239,7 @@ class DefaultParser extends Parser {
 
   private def parseFactor(stream: TokenStream): Either[ParsingError, TypedSyntaxTreeNode] = {
     val peek = stream.skipAndPeekValid()
-    peek.kind match {
+    val value = peek.kind match {
       case TokenKind.Null =>
         stream.next
         Right(NullNode(peek))
@@ -248,7 +247,16 @@ class DefaultParser extends Parser {
       case TokenKind.StringLiteral => parseString(stream)
       case TokenKind.Modulo => parseInstantiation(stream)
       case TokenKind.Identifier | TokenKind.This => parseIdentifierExpression(stream)
+      case TokenKind.LeftParenthesis =>
+        stream.next
+        val expression = parseExpression(stream)
+        consumeToken(stream, TokenKind.RightParenthesis)
+        expression
       case _ => Left(UnexpectedTokenError(peek))
+    }
+    (stream.peekValid().kind, value) match {
+      case (TokenKind.As, Right(value)) => parseCast(stream, value)
+      case _ => value
     }
   }
 
@@ -276,6 +284,13 @@ class DefaultParser extends Parser {
       _ <- consumeToken(stream, TokenKind.LeftParenthesis)
       arguments <- parseSequence(stream, TokenKind.Comma, TokenKind.RightParenthesis, parseExpression)
     } yield StructInstantiationNode(instantiationToken, structNameToken.value, Type.UnknownIdentifier(structNameToken.value), arguments)
+  }
+  
+  private def parseCast(stream: TokenStream, expression: TypedSyntaxTreeNode): Either[ParsingError, CastNode] = {
+    for {
+      castToken <- consumeToken(stream, TokenKind.As)
+      targetType <- parseType(stream)
+    } yield CastNode(castToken, expression, targetType)
   }
 
   private def parseEnum(stream: TokenStream): Either[ParsingError, EnumDeclarationNode] = {

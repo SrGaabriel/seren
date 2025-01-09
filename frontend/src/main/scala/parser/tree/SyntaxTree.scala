@@ -224,3 +224,13 @@ case class NullNode(token: Token) extends TypedSyntaxTreeNode {
 
   override def toString: String = s"NullNode"
 }
+
+case class CastNode(
+  token: Token,
+  expression: TypedSyntaxTreeNode,
+  nodeType: Type
+) extends TypedSyntaxTreeNode {
+  override val children: List[SyntaxTreeNode] = List(expression)
+
+  override def toString: String = s"CastNode($expression, $nodeType)"
+}
